@@ -10,7 +10,8 @@ import de.dagere.peass.visualization.VisualizeRCA;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
-@Command(name = "peass", mixinStandardHelpOptions = true, subcommands = { DependencyExecutionReader.class,
+@Command(name = "peass", mixinStandardHelpOptions = true, subcommands = { 
+        DependencyExecutionReader.class,
         DependencyTestStarter.class,
         GetChanges.class,
         ReadProperties.class,
@@ -20,7 +21,8 @@ import picocli.CommandLine.Command;
         CreateMeasurementExecutionScript.class,
         VisualizeRCA.class,
         ContinuousExecutionStarter.class,
-        FindMissingExecutions.class}, synopsisSubcommandLabel = "COMMAND")
+        FindMissingExecutions.class}, 
+        synopsisSubcommandLabel = "COMMAND")
 public class Main implements Callable<Void> {
     public static void main(final String[] args) {
         final CommandLine line = new CommandLine(new Main());
