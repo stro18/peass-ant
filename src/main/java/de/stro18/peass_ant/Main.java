@@ -3,9 +3,7 @@ package de.stro18.peass_ant;
 import java.util.concurrent.Callable;
 
 import de.dagere.peass.*;
-import de.dagere.peass.clean.MeasurementDataCleaner;
 import de.dagere.peass.reexecutions.FindMissingExecutions;
-import de.dagere.peass.measurement.utils.CreateMeasurementExecutionScript;
 import de.dagere.peass.visualization.VisualizeRCA;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -15,10 +13,8 @@ import picocli.CommandLine.Command;
         DependencyTestStarter.class,
         GetChanges.class,
         ReadProperties.class,
-        MeasurementDataCleaner.class,
         IsChange.class,
         RootCauseAnalysis.class,
-        CreateMeasurementExecutionScript.class,
         VisualizeRCA.class,
         ContinuousExecutionStarter.class,
         FindMissingExecutions.class}, 

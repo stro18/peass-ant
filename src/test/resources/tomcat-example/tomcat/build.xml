@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="demo-project" basedir="../.." default="main">
+
+    <property file="build.properties"/>
+    <property file="build.properties.default"/>
+
+    <property name="src.dir"     value="src"/>
+
+    <property name="base.dir"   value="build"/>
+    <property name="classes.dir" value="${base.dir}/classes"/>
+    <property name="test.classes.dir" value="${base.dir}/testclasses"/>
+
+    <property name="test.reports"          value="${base.dir}/logs"/>
+
+    <path id="compile.classpath">
+        <pathelement location="${slf4j-api.jar}"/>
+        <pathelement location="${slf4j-simple.jar}"/>
+        <pathelement path="${classes.dir}"/>
+    </path>
+
+    <path id="test.classpath">
+        <pathelement location="${junit.jar}"/>
+        <pathelement location="${hamcrest.jar}"/>
+        <pathelement path="${test.classes.dir}"/>
+        <path refid="compile.classpath" />
+    </path>
+
+    <target name="downloadfile" unless="exist" if="${execute.download}">
+        <local name="temp.file"/>
+        <mkdir dir="${base.path}"/>
+        <tempfile property="temp.file" destdir="${base.path}" prefix="download-" suffix=".tmp"/>
+        <get src="${sourcefile}" dest="build.xml"/>
+
+        <mkdir dir="build.xml"/>
+        <move file="build.xml" tofile="build.xml"/>
+    </target>
+
+    <target name="download-compile"
+            description="Download components necessary to compile">
+
+        <antcall target="downloadfile">
+            <param name="sourcefile" value="${slf4j-api.loc}"/>
+            <param name="destfile" value="${slf4j-api.jar}"/>
+            <param name="destdir" value="${slf4j-api.home}"/>
+        </antcall>
+
+        <antcall target="downloadfile">
+            <param name="sourcefile" value="${slf4j-simple.loc}"/>
+            <param name="destfile" value="${slf4j-simple.jar}"/>
+            <param name="destdir" value="${slf4j-simple.home}"/>
+        </antcall>
+    </target>
+
+    <target name="download-test-compile"
+            description="Download additional components for the tests">
+
+        <antcall target="downloadfile">
+            <param name="sourcefile" value="${junit.loc}"/>
+            <param name="destfile" value="${junit.jar}"/>
+            <param name="destdir" value="${junit.home}"/>
+        </antcall>
+
+        <antcall target="downloadfile">
+            <param name="sourcefile" value="${hamcrest.loc}"/>
+            <param name="destfile" value="${hamcrest.jar}"/>
+            <param name="destdir" value="${hamcrest.home}"/>
+        </antcall>
+    </target>
+
+    <target name="clean">
+        <delete dir="${base.dir}"/>
+    </target>
+
+    <target name="compile" depends="download-compile">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}/main/java" destdir="${classes.dir}"
+               includeAntRuntime="true" >
+            <classpath refid="compile.classpath" />
+        </javac>
+    </target>
+
+    <target name="test-compile" depends="compile, download-test-compile" >
+        <mkdir dir="${test.classes.dir}"/>
+        <javac srcdir="${src.dir}/test/java" destdir="${test.classes.dir}"
+               includeantruntime="true">
+            <classpath refid="test.classpath"/>
+        </javac>
+    </target>
+
+    <target name="test" description="Runs the JUnit test cases. Does not stop on errors."
+            depends="test-compile">
+        <mkdir dir="${test.reports}" />
+        <junit printsummary="yes" fork ="yes" dir="../.." showoutput="true" threads="${test.threads}">
+
+            <classpath refid="test.classpath"/>
+
+            <!-- #Formatters for capture and display -->
+            <formatter
+                    type="brief"
+                    usefile="false"
+            />
+            <formatter type="brief" />
+
+            <!-- If test.entry is defined, run a single test, otherwise run all valid tests -->
+            <test todir="${test.reports}" name="${test.entry}"
+                  if="test.entry" unless="test.entry.methods"
+            />
+            <test todir="${test.reports}" name="${test.entry}" methods="${test.entry.methods}"
+                  if="test.entry.methods"
+            />
+            <batchtest todir="${test.reports}" unless="test.entry">
+                <fileset dir="${src.dir}/test/java" includes="**/*Test.java"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="main" depends="clean,test"/>
+
+    <target name="compile-webapp-examples" if="noSkip" >
+        <javac classpath="${tomcat.classes}" />
+        <javac classpath="${tomcat.classes}" />
+    </target>
+
+    <target name="examples-sources" if="noSkip" >
+        <taskdef name="txt2html" classpath="${tomcat.classes}" />
+    </target>
+</project>
