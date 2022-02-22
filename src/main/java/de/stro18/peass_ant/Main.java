@@ -8,6 +8,7 @@ import de.dagere.peass.visualization.VisualizeRCA;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
+// 2 Subcommands are still missing because old version of Peass does not contain the corresponding classes
 @Command(name = "peass", mixinStandardHelpOptions = true, subcommands = { 
         DependencyExecutionReader.class,
         DependencyTestStarter.class,
