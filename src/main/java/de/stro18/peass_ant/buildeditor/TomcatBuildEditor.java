@@ -1,4 +1,4 @@
-package de.stro18.peass_ant.fileeditor;
+package de.stro18.peass_ant.buildeditor;
 
 import de.dagere.peass.execution.kieker.ArgLineBuilder;
 import de.dagere.peass.execution.utils.ProjectModules;
@@ -19,37 +19,28 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TomcatBuildfileEditor {
+public class TomcatBuildEditor extends AntBuildEditor {
 
-    private static final Logger LOG = LogManager.getLogger(TomcatBuildfileEditor.class);
-
-    private final JUnitTestTransformer testTransformer;
-    private final ProjectModules modules;
-    private final PeassFolders folders;
+    private static final Logger LOG = LogManager.getLogger(TomcatBuildEditor.class);
+    
     private File lastTmpFile;
 
-    public TomcatBuildfileEditor(final JUnitTestTransformer testTransformer, final ProjectModules modules, final PeassFolders folders) {
-        this.testTransformer = testTransformer;
-        this.modules = modules;
-        this.folders = folders;
+    public TomcatBuildEditor(final JUnitTestTransformer testTransformer, final ProjectModules modules, final PeassFolders folders) {
+        super(testTransformer, modules, folders);
     }
 
-    public void prepareBuildfile() {
+    @Override
+    public void prepareBuild() {
         try {
             lastTmpFile = Files.createTempDirectory(folders.getKiekerTempFolder().toPath(), "kiekerTemp").toFile();
             for (final File module : modules.getModules()) {
@@ -218,23 +209,6 @@ public class TomcatBuildfileEditor {
         Node propertiesFilePropertyElement = getNodeByXPath(doc, "//property[@file='build.properties.default']");
         propertiesFilePropertyElement.getParentNode().insertBefore(nioPropertyElement, propertiesFilePropertyElement);
         propertiesFilePropertyElement.getParentNode().insertBefore(aprPropertyElement, propertiesFilePropertyElement);
-    }
-
-    private void transformXmlFile(Document doc, File buildfile) {
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream stylesheet = classLoader.getResourceAsStream("stylesheet.xslt");
-
-        try {
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer(new StreamSource(stylesheet));
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(buildfile);
-            transformer.transform(source, result);
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
     }
 
     private void createPeassClasspath(Document doc, List<TransitiveRequiredDependency> requiredDependencies, String depsFolder) {

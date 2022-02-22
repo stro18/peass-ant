@@ -1,4 +1,4 @@
-package de.stro18.peass_ant.fileeditor;
+package de.stro18.peass_ant.buildeditor;
 
 import de.dagere.peass.config.MeasurementConfig;
 import de.dagere.peass.execution.utils.ProjectModules;
@@ -30,7 +30,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TestTomcatBuildfileEditor
+public class TestTomcatBuildEditor
 {
     private static final File TEST_FOLDER = new File("src" + File.separator + "test");
 
@@ -73,9 +73,9 @@ public class TestTomcatBuildfileEditor
         JUnitTestTransformer testTransformer = new JUnitTestTransformer(tomcatDirectory, measurementConfig);
         testTransformer.determineVersionsForPaths(projectModules.getModules());
 
-        TomcatBuildfileEditor tomcatBuildfileEditor = new TomcatBuildfileEditor(testTransformer, projectModules, peassFolders);
+        TomcatBuildEditor tomcatBuildConfigEditor = new TomcatBuildEditor(testTransformer, projectModules, peassFolders);
 
-        tomcatBuildfileEditor.prepareBuildfile();
+        tomcatBuildConfigEditor.prepareBuild();
     }
 
     @AfterAll
