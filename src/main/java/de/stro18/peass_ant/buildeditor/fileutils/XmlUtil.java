@@ -51,4 +51,12 @@ public class XmlUtil {
 
         return listOfNodes;
     }
+
+    public static void addProperty(Document doc, String name, String value, Node successorProperty) {
+        Element propertyElement = doc.createElement("property");
+        propertyElement.setAttribute("name", name);
+        propertyElement.setAttribute("value", value);
+        
+        successorProperty.getParentNode().insertBefore(propertyElement, successorProperty);
+    }
 }
