@@ -8,7 +8,7 @@ import de.dagere.peass.dependency.analysis.data.TestCase;
 import de.dagere.peass.execution.processutils.ProcessBuilderHelper;
 import de.dagere.peass.execution.processutils.ProcessSuccessTester;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
-import de.stro18.peass_ant.buildeditor.TomcatBuildEditor;
+import de.stro18.peass_ant.buildeditor.tomcat.TomcatBuildEditor;
 import de.stro18.peass_ant.utils.AntModuleUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,8 +16,6 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class AntTestExecutor extends KoPeMeExecutor {

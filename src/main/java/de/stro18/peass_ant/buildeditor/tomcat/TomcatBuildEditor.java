@@ -1,10 +1,12 @@
-package de.stro18.peass_ant.buildeditor;
+package de.stro18.peass_ant.buildeditor.tomcat;
 
 import de.dagere.peass.execution.utils.ProjectModules;
 import de.dagere.peass.execution.utils.RequiredDependency;
 import de.dagere.peass.folders.PeassFolders;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
+import de.stro18.peass_ant.buildeditor.AntBuildEditor;
 import de.stro18.peass_ant.buildeditor.fileutils.XmlUtil;
+import de.stro18.peass_ant.buildeditor.helper.TransitiveDependencyFinder;
 import de.stro18.peass_ant.buildeditor.tomcat.ClasspathExtender;
 import de.stro18.peass_ant.buildeditor.tomcat.DownloadAdder;
 import de.stro18.peass_ant.buildeditor.tomcat.PropertySetter;

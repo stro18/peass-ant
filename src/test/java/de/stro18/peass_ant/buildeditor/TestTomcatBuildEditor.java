@@ -4,6 +4,7 @@ import de.dagere.peass.config.MeasurementConfig;
 import de.dagere.peass.execution.utils.ProjectModules;
 import de.dagere.peass.folders.PeassFolders;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
+import de.stro18.peass_ant.buildeditor.tomcat.TomcatBuildEditor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

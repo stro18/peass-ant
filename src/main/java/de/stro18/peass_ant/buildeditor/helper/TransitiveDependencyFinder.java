@@ -1,4 +1,4 @@
-package de.stro18.peass_ant.buildeditor;
+package de.stro18.peass_ant.buildeditor.helper;
 
 import de.dagere.peass.execution.utils.RequiredDependency;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;

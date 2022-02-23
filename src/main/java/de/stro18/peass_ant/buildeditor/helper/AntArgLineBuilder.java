@@ -1,4 +1,4 @@
-package de.stro18.peass_ant.buildeditor;
+package de.stro18.peass_ant.buildeditor.helper;
 
 import de.dagere.peass.execution.kieker.ArgLineBuilder;
 import de.dagere.peass.testtransformation.TestTransformer;
