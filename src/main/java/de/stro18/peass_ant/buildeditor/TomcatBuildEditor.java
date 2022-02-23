@@ -8,76 +8,99 @@ import de.stro18.peass_ant.buildeditor.tomcat.ClasspathExtender;
 import de.stro18.peass_ant.buildeditor.tomcat.DownloadAdder;
 import de.stro18.peass_ant.buildeditor.tomcat.PropertySetter;
 import de.stro18.peass_ant.utils.TransitiveRequiredDependency;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.w3c.dom.*;
 import java.io.File;
 import java.util.List;
 
 public class TomcatBuildEditor extends AntBuildEditor {
-
-    private static final Logger LOG = LogManager.getLogger(TomcatBuildEditor.class);
+    
+    private List<TransitiveRequiredDependency> requiredDependencies;
 
     public TomcatBuildEditor(final JUnitTestTransformer testTransformer, final ProjectModules modules, final PeassFolders folders) {
         super(testTransformer, modules, folders);
+
+        requiredDependencies = TransitiveRequiredDependency.getAllTransitives(testTransformer.isJUnit3());
     }
 
     @Override
-    public void prepareBuild() {
-        for (final File module : modules.getModules()) {
-            File buildfile = new File(module, "build.xml");
-            editMainBuildfile(buildfile);
+    protected void addDependencyDownloads(File module) {
+        File buildfile = new File(module, "build.xml");
+        
+        if (!buildfile.exists()) {
+            return;
+        }
+        
+        Document doc = XmlUtil.createDom(buildfile);
+        DownloadAdder downloadAdder = new DownloadAdder();
 
-            File jdbcPoolBuildfile = new File(module, "modules" + File.separator + "jdbc-pool" + File.separator +
-                    "build.xml");
-            if (jdbcPoolBuildfile.exists()) {
-                editJdbcPoolBuildfile(jdbcPoolBuildfile);
-            }
-            
-            File propertiesFile = new File(module, "conf" + File.separator + "catalina.properties");
-            if (propertiesFile.exists()) {
-                PropertySetter propertySetter = new PropertySetter();
-                propertySetter.changeCatalinaProperties(propertiesFile);
-            }
+        switch (module.getName()) {
+            case "tomcat":
+                downloadAdder.addDependenciesToDownloads(doc, "download-compile", requiredDependencies); 
+                break;
+            case "jdbc-pool":
+                downloadAdder.addDependenciesToDownloads(doc, "download", requiredDependencies);
+                break;
+        }
+        
+        XmlUtil.transformXmlFile(doc, buildfile);
+    }
+
+    @Override
+    protected void extendClasspaths(File module) {
+        switch (module.getName()) {
+            case "tomcat":
+                this.extendClasspathsRootModule(module);
+                break;
+            case "jdbc-pool":
+                this.extendClasspathsJdbcModule(module);
+                break;
         }
 
     }
 
-    public void editMainBuildfile(final File buildfile) {
-        LOG.debug("Editing buildfile: {}", buildfile.getAbsolutePath());
+    @Override
+    protected void changeProperties(File module) {
+        if (module.getName().equals("tomcat")) {
+            File buildfile = new File(module, "build.xml");
+            Document doc = XmlUtil.createDom(buildfile);
 
+            PropertySetter propertySetter = new PropertySetter();
+            propertySetter.changeProperties(doc);
+
+            XmlUtil.transformXmlFile(doc, buildfile);
+
+            File propertiesFile = new File(module, "conf" + File.separator + "catalina.properties");
+            
+            if (propertiesFile.exists()) {
+                propertySetter.changeCatalinaProperties(propertiesFile);
+            }
+        }
+    }
+
+    @Override
+    protected void additionalChanges(File module) {
+        return;
+    }
+
+    private void extendClasspathsRootModule(File module) {
+        File buildfile = new File(module, "build.xml");
         Document doc = XmlUtil.createDom(buildfile);
-
-        List<TransitiveRequiredDependency> requiredDependencies = TransitiveRequiredDependency
-                .getAllTransitives(testTransformer.isJUnit3());
-
-        DownloadAdder downloadAdder = new DownloadAdder();
-        downloadAdder.addDependenciesToDownloads(doc, requiredDependencies);
 
         ClasspathExtender classpathExtender = new ClasspathExtender();
         classpathExtender.addDependenciesToClasspaths(doc, requiredDependencies);
         classpathExtender.changeWebappExamplesClasspath(doc);
         classpathExtender.changeTxt2HtmlClasspath(doc);
 
-        addJvmArguments(doc, buildfile.getParentFile());
-
-        PropertySetter propertySetter = new PropertySetter();
-        propertySetter.changeProperties(doc);
-
         XmlUtil.transformXmlFile(doc, buildfile);
+        
     }
 
-    public void editJdbcPoolBuildfile(final File buildfile) {
-        LOG.debug("Editing buildfile: {}", buildfile.getAbsolutePath());
-
+    private void extendClasspathsJdbcModule(File module) {
+        File buildfile = new File(module, "build.xml");
         Document doc = XmlUtil.createDom(buildfile);
-
-        List<TransitiveRequiredDependency> requiredDependencies = TransitiveRequiredDependency
-                .getAllTransitives(testTransformer.isJUnit3());
 
         ClasspathExtender classpathExtender = new ClasspathExtender();
         classpathExtender.createPeassClasspath(doc, requiredDependencies, "${user.home}" + File.separator + "tomcat-build-libs");
-
         classpathExtender.changeJdbcClasspath(doc);
 
         XmlUtil.transformXmlFile(doc, buildfile);

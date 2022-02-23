@@ -9,6 +9,7 @@ import de.dagere.peass.execution.processutils.ProcessBuilderHelper;
 import de.dagere.peass.execution.processutils.ProcessSuccessTester;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
 import de.stro18.peass_ant.buildeditor.TomcatBuildEditor;
+import de.stro18.peass_ant.utils.AntModuleUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -87,9 +88,7 @@ public class AntTestExecutor extends KoPeMeExecutor {
 
     @Override
     public ProjectModules getModules() {
-        final List<File> modules = new LinkedList<>();
-        modules.add(folders.getProjectFolder());
-        return new ProjectModules(modules);
+        return AntModuleUtil.getModules(folders);
     }
 
     @Override

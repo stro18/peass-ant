@@ -10,8 +10,10 @@ import java.util.List;
 
 public class DownloadAdder {
 
-    public void addDependenciesToDownloads(Document doc, List<TransitiveRequiredDependency> requiredDependencies) {
-        Node target = XmlUtil.getNodeByXPath(doc,"//target[@name='download-compile']");
+    public void addDependenciesToDownloads(Document doc, String downloadTargetName, List<TransitiveRequiredDependency> requiredDependencies) {
+        String xPathExpressionTemplate = "//target[@name='%s']";
+        String xPathExpression = String.format(xPathExpressionTemplate, downloadTargetName);
+        Node target = XmlUtil.getNodeByXPath(doc,xPathExpression);
 
         for (TransitiveRequiredDependency dependency : requiredDependencies) {
             String artifactName = dependency.getDependencyName();

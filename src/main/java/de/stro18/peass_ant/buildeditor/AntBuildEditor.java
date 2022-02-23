@@ -5,23 +5,20 @@ import de.dagere.peass.execution.utils.ProjectModules;
 import de.dagere.peass.folders.PeassFolders;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
 import de.stro18.peass_ant.buildeditor.fileutils.XmlUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.List;
 
 public abstract class AntBuildEditor {
+
+    private static final Logger LOG = LogManager.getLogger(AntBuildEditor.class);
 
     protected final JUnitTestTransformer testTransformer;
     protected final ProjectModules modules;
@@ -40,10 +37,28 @@ public abstract class AntBuildEditor {
         }
     }
     
-    public abstract void prepareBuild();
+    public final void prepareBuild() {
+        for (final File module : modules.getModules()) {
+            LOG.debug("Preparing build files of module " + module.getName());
+            
+            this.addDependencyDownloads(module);
+            this.extendClasspaths(module);
+            this.changeProperties(module);
+            this.addJvmArguments(module);
+            this.additionalChanges(module);
+        }
+    }
 
-    protected void addJvmArguments(Document doc, File moduleFolder) {
-        final String originalArglineStr = new ArgLineBuilder(testTransformer, moduleFolder)
+    protected void addJvmArguments(File module) {
+        File buildfile = new File(module, "build.xml");
+
+        if (!buildfile.exists()) {
+            return;
+        }
+
+        Document doc = XmlUtil.createDom(buildfile);
+        
+        final String originalArglineStr = new ArgLineBuilder(testTransformer, module)
                 .buildArglineMaven(lastTmpFile);
 
         if (!originalArglineStr.isEmpty()) {
@@ -52,12 +67,24 @@ public abstract class AntBuildEditor {
                     .replace("\"", "");
             final String[] argline = arglineStr.split(" ");
 
-            Node jUnitElement = XmlUtil.getNodeByXPath(doc,"//junit");
-            for (String arg : argline) {
-                Element jvmargElement = doc.createElement("jvmarg");
-                jvmargElement.setAttribute("value", arg);
-                jUnitElement.appendChild(jvmargElement);
+            List<Node> jUnitElementList = XmlUtil.getNodeListByXPath(doc,"//junit");
+            for (Node jUnitElement : jUnitElementList) {
+                for (String arg : argline) {
+                    Element jvmargElement = doc.createElement("jvmarg");
+                    jvmargElement.setAttribute("value", arg);
+                    jUnitElement.appendChild(jvmargElement);
+                }
             }
         }
+
+        XmlUtil.transformXmlFile(doc, buildfile);
     }
+    
+    protected abstract void addDependencyDownloads(File module);
+    
+    protected abstract void extendClasspaths(File module);
+    
+    protected abstract void changeProperties(File module);
+    
+    protected abstract void additionalChanges(File module);
 }
