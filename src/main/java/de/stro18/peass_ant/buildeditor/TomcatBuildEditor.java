@@ -3,6 +3,7 @@ package de.stro18.peass_ant.buildeditor;
 import de.dagere.peass.execution.utils.ProjectModules;
 import de.dagere.peass.folders.PeassFolders;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
+import de.stro18.peass_ant.buildeditor.fileutils.XmlUtil;
 import de.stro18.peass_ant.buildeditor.tomcat.ClasspathExtender;
 import de.stro18.peass_ant.buildeditor.tomcat.DownloadAdder;
 import de.stro18.peass_ant.buildeditor.tomcat.PropertySetter;
@@ -51,7 +52,7 @@ public class TomcatBuildEditor extends AntBuildEditor {
     public void editMainBuildfile(final File buildfile) {
         LOG.debug("Editing buildfile: {}", buildfile.getAbsolutePath());
 
-        Document doc = createDom(buildfile);
+        Document doc = XmlUtil.createDom(buildfile);
 
         List<TransitiveRequiredDependency> requiredDependencies = TransitiveRequiredDependency
                 .getAllTransitives(testTransformer.isJUnit3());
@@ -75,7 +76,7 @@ public class TomcatBuildEditor extends AntBuildEditor {
     public void editJdbcPoolBuildfile(final File buildfile) {
         LOG.debug("Editing buildfile: {}", buildfile.getAbsolutePath());
 
-        Document doc = createDom(buildfile);
+        Document doc = XmlUtil.createDom(buildfile);
 
         List<TransitiveRequiredDependency> requiredDependencies = TransitiveRequiredDependency
                 .getAllTransitives(testTransformer.isJUnit3());
@@ -86,18 +87,5 @@ public class TomcatBuildEditor extends AntBuildEditor {
         classpathExtender.changeJdbcClasspath(doc);
 
         transformXmlFile(doc, buildfile);
-    }
-
-    private Document createDom(File buildfile) {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-
-        try {
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            return db.parse(buildfile);
-        } catch (ParserConfigurationException | IOException | SAXException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 }
