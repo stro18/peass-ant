@@ -11,13 +11,7 @@ import de.stro18.peass_ant.utils.TransitiveRequiredDependency;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.*;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 public class TomcatBuildEditor extends AntBuildEditor {
@@ -70,7 +64,7 @@ public class TomcatBuildEditor extends AntBuildEditor {
         PropertySetter propertySetter = new PropertySetter();
         propertySetter.changeProperties(doc);
 
-        transformXmlFile(doc, buildfile);
+        XmlUtil.transformXmlFile(doc, buildfile);
     }
 
     public void editJdbcPoolBuildfile(final File buildfile) {
@@ -86,6 +80,6 @@ public class TomcatBuildEditor extends AntBuildEditor {
 
         classpathExtender.changeJdbcClasspath(doc);
 
-        transformXmlFile(doc, buildfile);
+        XmlUtil.transformXmlFile(doc, buildfile);
     }
 }

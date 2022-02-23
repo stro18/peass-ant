@@ -60,21 +60,4 @@ public abstract class AntBuildEditor {
             }
         }
     }
-
-    protected void transformXmlFile(Document doc, File buildfile) {
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream stylesheet = classLoader.getResourceAsStream("stylesheet.xslt");
-
-        try {
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer(new StreamSource(stylesheet));
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(buildfile);
-            transformer.transform(source, result);
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
-    }
 }
