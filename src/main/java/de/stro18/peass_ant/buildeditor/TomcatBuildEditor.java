@@ -1,25 +1,26 @@
 package de.stro18.peass_ant.buildeditor;
 
 import de.dagere.peass.execution.utils.ProjectModules;
+import de.dagere.peass.execution.utils.RequiredDependency;
 import de.dagere.peass.folders.PeassFolders;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
 import de.stro18.peass_ant.buildeditor.fileutils.XmlUtil;
 import de.stro18.peass_ant.buildeditor.tomcat.ClasspathExtender;
 import de.stro18.peass_ant.buildeditor.tomcat.DownloadAdder;
 import de.stro18.peass_ant.buildeditor.tomcat.PropertySetter;
-import de.stro18.peass_ant.utils.TransitiveRequiredDependency;
 import org.w3c.dom.*;
 import java.io.File;
 import java.util.List;
 
 public class TomcatBuildEditor extends AntBuildEditor {
     
-    private List<TransitiveRequiredDependency> requiredDependencies;
+    private List<RequiredDependency> requiredDependencies;
 
     public TomcatBuildEditor(final JUnitTestTransformer testTransformer, final ProjectModules modules, final PeassFolders folders) {
         super(testTransformer, modules, folders);
 
-        requiredDependencies = TransitiveRequiredDependency.getAllTransitives(testTransformer.isJUnit3());
+        TransitiveDependencyFinder dependencyFinder = new TransitiveDependencyFinder();
+        requiredDependencies = dependencyFinder.getAllTransitives(testTransformer.isJUnit3());
     }
 
     @Override

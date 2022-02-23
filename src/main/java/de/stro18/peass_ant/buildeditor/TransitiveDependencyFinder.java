@@ -1,4 +1,4 @@
-package de.stro18.peass_ant.utils;
+package de.stro18.peass_ant.buildeditor;
 
 import de.dagere.peass.execution.utils.RequiredDependency;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
@@ -8,15 +8,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TransitiveRequiredDependency extends RequiredDependency {
+public class TransitiveDependencyFinder {
 
-    public static boolean jenkins = false;
+    public final boolean jenkins = false;
 
-    public TransitiveRequiredDependency(String groupId, String artifactId, String version, String scope, String classifier) {
-        super(groupId, artifactId, version, scope, classifier);
+    public TransitiveDependencyFinder() {
     }
 
-    public static List<TransitiveRequiredDependency> getAllTransitives(final boolean isJUnit3) {
+    public List<RequiredDependency> getAllTransitives(final boolean isJUnit3) {
         if (jenkins) {
             return getConstantDependencies();
         } else {
@@ -24,7 +23,7 @@ public class TransitiveRequiredDependency extends RequiredDependency {
         }
     }
 
-    private static List<TransitiveRequiredDependency> getTransitiveDependencies(final boolean isJUnit3) {
+    private List<RequiredDependency> getTransitiveDependencies(final boolean isJUnit3) {
         List<RequiredDependency> requiredNonTransitiveDeps = RequiredDependency.getAll(isJUnit3);
 
         List<String> requiredNonTransitiveDepsAsStrings = new ArrayList<>();
@@ -44,10 +43,10 @@ public class TransitiveRequiredDependency extends RequiredDependency {
         MavenCoordinate[] requiredTransitiveDepsAsCoordinates = Maven.resolver().resolve(requiredNonTransitiveDepsAsStrings.toArray(new String[]{}))
                 .withTransitivity().as(MavenCoordinate.class);
 
-        List<TransitiveRequiredDependency> requiredTransitiveDeps = new LinkedList<>();
+        List<RequiredDependency> requiredTransitiveDeps = new LinkedList<>();
         for (MavenCoordinate coordinate : requiredTransitiveDepsAsCoordinates) {
             System.out.println(coordinate.toCanonicalForm());
-            requiredTransitiveDeps.add(new TransitiveRequiredDependency(coordinate.getGroupId(),
+            requiredTransitiveDeps.add(new RequiredDependency(coordinate.getGroupId(),
                     coordinate.getArtifactId(), coordinate.getVersion(), null,
                     coordinate.getClassifier().isEmpty() ? null : coordinate.getClassifier()));
         }
@@ -55,18 +54,18 @@ public class TransitiveRequiredDependency extends RequiredDependency {
         return requiredTransitiveDeps;
     }
 
-    private static List<TransitiveRequiredDependency> getConstantDependencies() {
-        List<TransitiveRequiredDependency> requiredDependencies = new LinkedList<>();
+    private List<RequiredDependency> getConstantDependencies() {
+        List<RequiredDependency> requiredDependencies = new LinkedList<>();
         for (String dependencyStr : constantDependencies()) {
             String[] dependencyParts = dependencyStr.split(":");
 
-            TransitiveRequiredDependency dependency;
+            RequiredDependency dependency;
             if (dependencyParts.length == 5) {
-                dependency = new TransitiveRequiredDependency(dependencyParts[0],
+                dependency = new RequiredDependency(dependencyParts[0],
                         dependencyParts[1], dependencyParts[4], null, dependencyParts[3]);
             } else {
                 // dependencyParts.length = 4
-                dependency = new TransitiveRequiredDependency(dependencyParts[0],
+                dependency = new RequiredDependency(dependencyParts[0],
                         dependencyParts[1], dependencyParts[3], null, null);
             }
 
@@ -125,14 +124,5 @@ public class TransitiveRequiredDependency extends RequiredDependency {
         };
 
         return dependencies;
-    }
-
-    public String getDependencyName() {
-        if (this.getClassifier() == null) {
-            return this.getArtifactId() + "-" + this.getVersion();
-        } else {
-            return this.getArtifactId() + "-" + this.getVersion() + "-" +
-                    this.getClassifier();
-        }
     }
 }

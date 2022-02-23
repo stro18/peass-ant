@@ -1,7 +1,7 @@
 package de.stro18.peass_ant.buildeditor.tomcat;
 
+import de.dagere.peass.execution.utils.RequiredDependency;
 import de.stro18.peass_ant.buildeditor.fileutils.XmlUtil;
-import de.stro18.peass_ant.utils.TransitiveRequiredDependency;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ClasspathExtender {
 
-    public void addDependenciesToClasspaths(Document doc, List<TransitiveRequiredDependency> requiredDependencies) {
+    public void addDependenciesToClasspaths(Document doc, List<RequiredDependency> requiredDependencies) {
         createPeassClasspath(doc, requiredDependencies, "${base.path}");
 
         Element webExamplesClasspathElement = doc.createElement("path");
@@ -55,12 +55,12 @@ public class ClasspathExtender {
         }
     }
 
-    public void createPeassClasspath(Document doc, List<TransitiveRequiredDependency> requiredDependencies, String depsFolder) {
+    public void createPeassClasspath(Document doc, List<RequiredDependency> requiredDependencies, String depsFolder) {
         Element peassClasspathElement = doc.createElement("path");
         peassClasspathElement.setAttribute("id", "peass.classpath");
 
-        for (TransitiveRequiredDependency dependency : requiredDependencies) {
-            String artifactName = dependency.getDependencyName();
+        for (RequiredDependency dependency : requiredDependencies) {
+            String artifactName = getDependencyName(dependency);
 
             if (dependency.getArtifactId().equals("kieker")) {
                 artifactName = artifactName.replace("SNAPSHOT", "20211229.121939-97");
@@ -88,6 +88,15 @@ public class ClasspathExtender {
 
                 break;
             }
+        }
+    }
+
+    private String getDependencyName(RequiredDependency dependency) {
+        if (dependency.getClassifier() == null) {
+            return dependency.getArtifactId() + "-" + dependency.getVersion();
+        } else {
+            return dependency.getArtifactId() + "-" + dependency.getVersion() + "-" +
+                    dependency.getClassifier();
         }
     }
 }
