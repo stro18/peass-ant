@@ -9,19 +9,19 @@ while read -r line; do
 done < "$filename"
 
 if [ "$1" = "select" ]; then
-  ./peass-ant select -folder ../tomcat/ -classFolder java:webapps/examples/WEB-INF/classes:webapps/examples/jsp/plugin/applet -testClassFolder test \
+  ./peass-ant select -folder ../tomcat/ -classFolder java:src/main/java:webapps/examples/WEB-INF/classes:webapps/examples/jsp/plugin/applet -testClassFolder test \
     -testExecutor de.stro18.peass_ant.executor.AntTestExecutor -testTransformer de.dagere.peass.testtransformation.JUnitTestTransformer \
     -startversion 6cf20b4a83f1e5b2ae86525b6b96389e801776b2 -endversion b1ca09f34d0c22727bb5082053c7ae23c30ec8f2 -threads 1 -traceSizeInMb 10 -timeout 2 \
     -includes org.apache.* -excludes '*$*' $excluded
 elif [ "$1" = "measure" ]; then
-  ./peass-ant measure -folder ../tomcat/ -classFolder java:webapps/examples/WEB-INF/classes:webapps/examples/jsp/plugin/applet -testClassFolder test \
+  ./peass-ant measure -folder ../tomcat/ -classFolder java:src/main/java:webapps/examples/WEB-INF/classes:webapps/examples/jsp/plugin/applet -testClassFolder test \
     -executionfile results/execute_tomcat.json \
     -testExecutor de.stro18.peass_ant.executor.AntTestExecutor -testTransformer de.dagere.peass.testtransformation.JUnitTestTransformer -statisticTest T_TEST \
     -startversion 6cf20b4a83f1e5b2ae86525b6b96389e801776b2 -endversion b1ca09f34d0c22727bb5082053c7ae23c30ec8f2  \
     -vms 30 -iterations 50 -warmup 50 -repetitions 60 -measurementStrategy PARALLEL -timeout 2
   ./peass-ant getchanges -data ../tomcat_peass/ -executionfile results/execute_tomcat.json -type1error 0.05
 elif [ "$1" = "searchcause" ]; then
-  ./peass-ant searchcause -folder ../tomcat/ -classFolder java:webapps/examples/WEB-INF/classes:webapps/examples/jsp/plugin/applet -testClassFolder test \
+  ./peass-ant searchcause -folder ../tomcat/ -classFolder java:src/main/java:webapps/examples/WEB-INF/classes:webapps/examples/jsp/plugin/applet -testClassFolder test \
     -executionfile results/execute_tomcat.json \
     -testExecutor de.stro18.peass_ant.executor.AntTestExecutor -testTransformer de.dagere.peass.testtransformation.JUnitTestTransformer \
     -version b1ca09f34d0c22727bb5082053c7ae23c30ec8f2 -test org.apache.catalina.core.TestApplicationSessionCookieConfig\#testSetDomainInitPhase \
@@ -31,7 +31,7 @@ elif [ "$1" = "visualizerca" ]; then
 elif [ "$1" = "createScript" ]; then
   ./peass-ant createScript -executionfile results/execute_tomcat.json > results/runall.sh
 elif [ "$1" = "measureSingle" ]; then
-  ./peass-ant measure -folder ../tomcat/ -classFolder java:webapps/examples/WEB-INF/classes:webapps/examples/jsp/plugin/applet -testClassFolder test \
+  ./peass-ant measure -folder ../tomcat/ -classFolder java:src/main/java:webapps/examples/WEB-INF/classes:webapps/examples/jsp/plugin/applet -testClassFolder test \
     -executionfile $PEASS_REPOS/results/execute_tomcat.json \
     -testExecutor de.stro18.peass_ant.executor.AntTestExecutor -testTransformer de.dagere.peass.testtransformation.JUnitTestTransformer -statisticTest T_TEST \
     -version $2 -test $3  \
