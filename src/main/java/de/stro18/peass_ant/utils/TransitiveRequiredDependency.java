@@ -126,4 +126,13 @@ public class TransitiveRequiredDependency extends RequiredDependency {
 
         return dependencies;
     }
+
+    public String getDependencyName() {
+        if (this.getClassifier() == null) {
+            return this.getArtifactId() + "-" + this.getVersion();
+        } else {
+            return this.getArtifactId() + "-" + this.getVersion() + "-" +
+                    this.getClassifier();
+        }
+    }
 }

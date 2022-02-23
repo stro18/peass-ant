@@ -1,10 +1,9 @@
 package de.stro18.peass_ant.buildeditor;
 
-import de.dagere.peass.execution.kieker.ArgLineBuilder;
 import de.dagere.peass.execution.utils.ProjectModules;
-import de.dagere.peass.execution.utils.RequiredDependency;
 import de.dagere.peass.folders.PeassFolders;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
+import de.stro18.peass_ant.buildeditor.tomcat.DownloadAdder;
 import de.stro18.peass_ant.utils.TransitiveRequiredDependency;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
@@ -32,8 +31,6 @@ import java.util.List;
 public class TomcatBuildEditor extends AntBuildEditor {
 
     private static final Logger LOG = LogManager.getLogger(TomcatBuildEditor.class);
-    
-    private File lastTmpFile;
 
     public TomcatBuildEditor(final JUnitTestTransformer testTransformer, final ProjectModules modules, final PeassFolders folders) {
         super(testTransformer, modules, folders);
@@ -41,25 +38,20 @@ public class TomcatBuildEditor extends AntBuildEditor {
 
     @Override
     public void prepareBuild() {
-        try {
-            lastTmpFile = Files.createTempDirectory(folders.getKiekerTempFolder().toPath(), "kiekerTemp").toFile();
-            for (final File module : modules.getModules()) {
-                File buildfile = new File(module, "build.xml");
-                editMainBuildfile(buildfile);
+        for (final File module : modules.getModules()) {
+            File buildfile = new File(module, "build.xml");
+            editMainBuildfile(buildfile);
 
-                File jdbcPoolBuildfile = new File(module, "modules" + File.separator + "jdbc-pool" + File.separator +
-                        "build.xml");
-                if (jdbcPoolBuildfile.exists()) {
-                    editJdbcPoolBuildfile(jdbcPoolBuildfile);
-                }
-                
-                File propertiesFile = new File(module, "conf" + File.separator + "catalina.properties");
-                if (propertiesFile.exists()) {
-                    changeCatalinaProperties(propertiesFile);
-                }
+            File jdbcPoolBuildfile = new File(module, "modules" + File.separator + "jdbc-pool" + File.separator +
+                    "build.xml");
+            if (jdbcPoolBuildfile.exists()) {
+                editJdbcPoolBuildfile(jdbcPoolBuildfile);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            
+            File propertiesFile = new File(module, "conf" + File.separator + "catalina.properties");
+            if (propertiesFile.exists()) {
+                changeCatalinaProperties(propertiesFile);
+            }
         }
 
     }
@@ -72,7 +64,8 @@ public class TomcatBuildEditor extends AntBuildEditor {
         List<TransitiveRequiredDependency> requiredDependencies = TransitiveRequiredDependency
                 .getAllTransitives(testTransformer.isJUnit3());
 
-        addDependenciesToDownloads(doc, requiredDependencies);
+        DownloadAdder downloadAdder = new DownloadAdder();
+        downloadAdder.addDependenciesToDownloads(doc, requiredDependencies);
 
         addDependenciesToClasspaths(doc, requiredDependencies);
 
@@ -100,39 +93,6 @@ public class TomcatBuildEditor extends AntBuildEditor {
         changeJdbcClasspath(doc);
 
         transformXmlFile(doc, buildfile);
-    }
-
-    private void addDependenciesToDownloads(Document doc, List<TransitiveRequiredDependency> requiredDependencies) {
-        Node target = getNodeByXPath(doc,"//target[@name='download-compile']");
-
-        for (RequiredDependency dependency : requiredDependencies) {
-            String artifactName = getDependencyName(dependency);
-
-            Element antcallElement = doc.createElement("antcall");
-            antcallElement.setAttribute("target", "downloadfile");
-
-            Element sourcefileParam;
-            if (dependency.getArtifactId().equals("kieker")) {
-                artifactName = artifactName.replace("SNAPSHOT", "20211229.121939-97");
-                sourcefileParam = createParamElement(doc, "sourcefile", "https://oss.sonatype.org/content/repositories/snapshots/" + dependency.getGroupId()
-                        .replace('.', '/') + "/" + dependency.getArtifactId() + "/" + dependency
-                        .getVersion() + "/" + artifactName + ".jar");
-            } else {
-                sourcefileParam = createParamElement(doc, "sourcefile", "${base-maven.loc}/" + dependency.getGroupId()
-                        .replace('.', '/') + "/" + dependency.getArtifactId() + "/" + dependency
-                        .getVersion() + "/" + artifactName + ".jar");
-            }
-            antcallElement.appendChild(sourcefileParam);
-
-            String destdir = "${base.path}/" + artifactName;
-            Element destdirParam = createParamElement(doc, "destdir",  destdir);
-            antcallElement.appendChild(destdirParam);
-
-            Element destfileParam = createParamElement(doc, "destfile", destdir + "/" + artifactName + ".jar");
-            antcallElement.appendChild(destfileParam);
-
-            target.appendChild(antcallElement);
-        }
     }
 
     private void addDependenciesToClasspaths(Document doc, List<TransitiveRequiredDependency> requiredDependencies) {
@@ -177,25 +137,6 @@ public class TomcatBuildEditor extends AntBuildEditor {
             taskDefElement.setAttribute("classpathref", "web-examples.classpath");
         }
     }
-
-    private void addJvmArguments(Document doc, File moduleFolder) {
-        final String originalArglineStr = new ArgLineBuilder(testTransformer, moduleFolder)
-                .buildArglineMaven(lastTmpFile);
-
-        if (!originalArglineStr.isEmpty()) {
-            String arglineStr = originalArglineStr
-                    .replace("'", "")
-                    .replace("\"", "");
-            final String[] argline = arglineStr.split(" ");
-
-            Node jUnitElement = getNodeByXPath(doc,"//junit");
-            for (String arg : argline) {
-                Element jvmargElement = doc.createElement("jvmarg");
-                jvmargElement.setAttribute("value", arg);
-                jUnitElement.appendChild(jvmargElement);
-            }
-        }
-    }
     
     private void changeProperties(Document doc) {
         Element nioPropertyElement = doc.createElement("property");
@@ -215,8 +156,8 @@ public class TomcatBuildEditor extends AntBuildEditor {
         Element peassClasspathElement = doc.createElement("path");
         peassClasspathElement.setAttribute("id", "peass.classpath");
 
-        for (RequiredDependency dependency : requiredDependencies) {
-            String artifactName = getDependencyName(dependency);
+        for (TransitiveRequiredDependency dependency : requiredDependencies) {
+            String artifactName = dependency.getDependencyName();
 
             if (dependency.getArtifactId().equals("kieker")) {
                 artifactName = artifactName.replace("SNAPSHOT", "20211229.121939-97");
@@ -260,15 +201,6 @@ public class TomcatBuildEditor extends AntBuildEditor {
         }
     }
 
-    private String getDependencyName(RequiredDependency dependency) {
-        if (dependency.getClassifier() == null) {
-            return dependency.getArtifactId() + "-" + dependency.getVersion();
-        } else {
-            return dependency.getArtifactId() + "-" + dependency.getVersion() + "-" +
-                    dependency.getClassifier();
-        }
-    }
-
     private Node getNodeByXPath(Document doc, String xPathExpression) {
         XPath xPath = XPathFactory.newInstance().newXPath();
 
@@ -297,14 +229,6 @@ public class TomcatBuildEditor extends AntBuildEditor {
         }
 
         return listOfNodes;
-    }
-
-    private Element createParamElement(Document doc, String name, String value) {
-        Element paramElement = doc.createElement("param");
-        paramElement.setAttribute("name", name);
-        paramElement.setAttribute("value", value);
-
-        return paramElement;
     }
     
     private void changeCatalinaProperties(File propertiesFile) {
