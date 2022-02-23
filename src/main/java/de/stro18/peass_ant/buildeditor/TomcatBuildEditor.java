@@ -3,6 +3,7 @@ package de.stro18.peass_ant.buildeditor;
 import de.dagere.peass.execution.utils.ProjectModules;
 import de.dagere.peass.folders.PeassFolders;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
+import de.stro18.peass_ant.buildeditor.tomcat.ClasspathExtender;
 import de.stro18.peass_ant.buildeditor.tomcat.DownloadAdder;
 import de.stro18.peass_ant.utils.TransitiveRequiredDependency;
 import org.apache.commons.configuration2.PropertiesConfiguration;
@@ -67,11 +68,10 @@ public class TomcatBuildEditor extends AntBuildEditor {
         DownloadAdder downloadAdder = new DownloadAdder();
         downloadAdder.addDependenciesToDownloads(doc, requiredDependencies);
 
-        addDependenciesToClasspaths(doc, requiredDependencies);
-
-        changeWebappExamplesClasspath(doc);
-
-        changeTxt2HtmlClasspath(doc);
+        ClasspathExtender classpathExtender = new ClasspathExtender();
+        classpathExtender.addDependenciesToClasspaths(doc, requiredDependencies);
+        classpathExtender.changeWebappExamplesClasspath(doc);
+        classpathExtender.changeTxt2HtmlClasspath(doc);
 
         addJvmArguments(doc, buildfile.getParentFile());
         
@@ -88,54 +88,12 @@ public class TomcatBuildEditor extends AntBuildEditor {
         List<TransitiveRequiredDependency> requiredDependencies = TransitiveRequiredDependency
                 .getAllTransitives(testTransformer.isJUnit3());
 
-        createPeassClasspath(doc, requiredDependencies, "${user.home}" + File.separator + "tomcat-build-libs");
+        ClasspathExtender classpathExtender = new ClasspathExtender();
+        classpathExtender.createPeassClasspath(doc, requiredDependencies, "${user.home}" + File.separator + "tomcat-build-libs");
 
-        changeJdbcClasspath(doc);
+        classpathExtender.changeJdbcClasspath(doc);
 
         transformXmlFile(doc, buildfile);
-    }
-
-    private void addDependenciesToClasspaths(Document doc, List<TransitiveRequiredDependency> requiredDependencies) {
-        createPeassClasspath(doc, requiredDependencies, "${base.path}");
-
-        Element webExamplesClasspathElement = doc.createElement("path");
-        webExamplesClasspathElement.setAttribute("id", "web-examples.classpath");
-
-        Element tomcatClasspathElement = doc.createElement("path");
-        tomcatClasspathElement.setAttribute("refid", "tomcat.classpath");
-        webExamplesClasspathElement.appendChild(tomcatClasspathElement);
-
-        Element peassClasspathRefElement = doc.createElement("path");
-        peassClasspathRefElement.setAttribute("refid", "peass.classpath");
-        webExamplesClasspathElement.appendChild(peassClasspathRefElement);
-
-        doc.getDocumentElement().appendChild(webExamplesClasspathElement);
-
-        Node path = getNodeByXPath(doc, "//path[@id='compile.classpath']");
-
-        Element peassClasspathRefElement2 = doc.createElement("path");
-        peassClasspathRefElement2.setAttribute("refid", "peass.classpath");
-        path.appendChild(peassClasspathRefElement2);
-    }
-
-    private void changeWebappExamplesClasspath(Document doc) {
-        List<Node> javacNodes = getNodeListByXPath(doc, "//target[@name='compile-webapp-examples']/javac");
-
-        if (!javacNodes.isEmpty()) {
-            for (Node javacNode : javacNodes) {
-                Element javacElement = (Element) javacNode;
-                javacElement.removeAttribute("classpath");
-                javacElement.setAttribute("classpathref", "web-examples.classpath");
-            }
-        }
-    }
-
-    private void changeTxt2HtmlClasspath(Document doc) {
-        Element taskDefElement = (Element) getNodeByXPath(doc, "//taskdef[@name='txt2html']");
-        if (taskDefElement != null) {
-            taskDefElement.removeAttribute("classpath");
-            taskDefElement.setAttribute("classpathref", "web-examples.classpath");
-        }
     }
     
     private void changeProperties(Document doc) {
@@ -150,42 +108,6 @@ public class TomcatBuildEditor extends AntBuildEditor {
         Node propertiesFilePropertyElement = getNodeByXPath(doc, "//property[@file='build.properties.default']");
         propertiesFilePropertyElement.getParentNode().insertBefore(nioPropertyElement, propertiesFilePropertyElement);
         propertiesFilePropertyElement.getParentNode().insertBefore(aprPropertyElement, propertiesFilePropertyElement);
-    }
-
-    private void createPeassClasspath(Document doc, List<TransitiveRequiredDependency> requiredDependencies, String depsFolder) {
-        Element peassClasspathElement = doc.createElement("path");
-        peassClasspathElement.setAttribute("id", "peass.classpath");
-
-        for (TransitiveRequiredDependency dependency : requiredDependencies) {
-            String artifactName = dependency.getDependencyName();
-
-            if (dependency.getArtifactId().equals("kieker")) {
-                artifactName = artifactName.replace("SNAPSHOT", "20211229.121939-97");
-            }
-            Element pathElement = doc.createElement("pathelement");
-            pathElement.setAttribute("location", depsFolder + File.separator + artifactName + File.separator +
-                    artifactName + ".jar");
-            peassClasspathElement.appendChild(pathElement);
-        }
-
-        doc.getDocumentElement().appendChild(peassClasspathElement);
-    }
-
-    private void changeJdbcClasspath(Document doc) {
-        NodeList listOfPaths = doc.getElementsByTagName("path");
-
-        for (int i = 0; i < listOfPaths.getLength(); i++) {
-            Node path = listOfPaths.item(i);
-
-            Node idNode = path.getAttributes().getNamedItem("id");
-            if (idNode != null && idNode.getTextContent().equals("tomcat.jdbc.classpath")) {
-                Element peassClasspathRefElement2 = doc.createElement("path");
-                peassClasspathRefElement2.setAttribute("refid", "peass.classpath");
-                path.appendChild(peassClasspathRefElement2);
-
-                break;
-            }
-        }
     }
 
     private Document createDom(File buildfile) {
@@ -210,25 +132,6 @@ public class TomcatBuildEditor extends AntBuildEditor {
             e.printStackTrace();
             return null;
         }
-    }
-
-    private List<Node> getNodeListByXPath(Document doc, String xPathExpression) {
-        XPath xPath = XPathFactory.newInstance().newXPath();
-
-        NodeList nodeList;
-        try {
-            nodeList = (NodeList) xPath.compile(xPathExpression).evaluate(doc, XPathConstants.NODESET);
-        } catch (XPathExpressionException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        List<Node> listOfNodes = new LinkedList<>();
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            listOfNodes.add(nodeList.item(i));
-        }
-
-        return listOfNodes;
     }
     
     private void changeCatalinaProperties(File propertiesFile) {
