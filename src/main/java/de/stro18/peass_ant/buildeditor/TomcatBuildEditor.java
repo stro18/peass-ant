@@ -33,13 +33,10 @@ public class TomcatBuildEditor extends AntBuildEditor {
         Document doc = XmlUtil.createDom(buildfile);
         DownloadAdder downloadAdder = new DownloadAdder();
 
-        switch (module.getName()) {
-            case "tomcat":
-                downloadAdder.addDependenciesToDownloads(doc, "download-compile", requiredDependencies); 
-                break;
-            case "jdbc-pool":
-                downloadAdder.addDependenciesToDownloads(doc, "download", requiredDependencies);
-                break;
+        if (module.getName().equals(folders.getProjectFolder().getName())) {
+            downloadAdder.addDependenciesToDownloads(doc, "download-compile", requiredDependencies);
+        } else if (module.getName().equals("jdbc-pool")) {
+            downloadAdder.addDependenciesToDownloads(doc, "download", requiredDependencies);
         }
         
         XmlUtil.transformXmlFile(doc, buildfile);
@@ -47,20 +44,16 @@ public class TomcatBuildEditor extends AntBuildEditor {
 
     @Override
     protected void extendClasspaths(File module) {
-        switch (module.getName()) {
-            case "tomcat":
-                this.extendClasspathsRootModule(module);
-                break;
-            case "jdbc-pool":
-                this.extendClasspathsJdbcModule(module);
-                break;
+        if (module.getName().equals(folders.getProjectFolder().getName())) {
+            this.extendClasspathsRootModule(module);
+        } else if (module.getName().equals("jdbc-pool")) {
+            this.extendClasspathsJdbcModule(module);
         }
-
     }
 
     @Override
     protected void changeProperties(File module) {
-        if (module.getName().equals("tomcat")) {
+        if (module.getName().equals(folders.getProjectFolder().getName())) {
             File buildfile = new File(module, "build.xml");
             Document doc = XmlUtil.createDom(buildfile);
 

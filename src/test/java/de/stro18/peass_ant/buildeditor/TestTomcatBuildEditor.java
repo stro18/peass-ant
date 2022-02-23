@@ -67,7 +67,7 @@ public class TestTomcatBuildEditor
     }
 
     static void executePrepareBuildfile() {
-        PeassFolders peassFolders = new PeassFolders(tomcatPeassDirectory);
+        PeassFolders peassFolders = new PeassFolders(tomcatDirectory);
         
         List<File> modules = new ArrayList<>();
         modules.add(tomcatDirectory);
