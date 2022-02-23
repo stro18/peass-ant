@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 mydir="${0%/*}"
-java -jar $mydir/target/peass-ant-1.*-SNAPSHOT.jar $@
+java -Xmx8192m -jar $mydir/target/peass-ant-1.*-SNAPSHOT.jar $@

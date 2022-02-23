@@ -1,9 +1,10 @@
-package de.stro18.peass_ant.fileeditor;
+package de.stro18.peass_ant.buildeditor;
 
 import de.dagere.peass.config.MeasurementConfig;
 import de.dagere.peass.execution.utils.ProjectModules;
 import de.dagere.peass.folders.PeassFolders;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
+import de.stro18.peass_ant.buildeditor.tomcat.TomcatBuildEditor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,23 +27,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TestTomcatBuildfileEditor
+public class TestTomcatBuildEditor
 {
     private static final File TEST_FOLDER = new File("src" + File.separator + "test");
-
     private static final File tomcatExampleDirectory = new File(TEST_FOLDER, "resources" + File.separator + "tomcat-example");
+    
     private static final File tomcatDirectory = new File(tomcatExampleDirectory, "tomcat");
+    private static final File jdbcDirectory = new File(tomcatDirectory, "modules" + File.separator + "jdbc-pool");
     private static final File tomcatPeassDirectory = new File(tomcatExampleDirectory, "tomcat_peass");
 
     private static final Path buildXmlPath = Paths.get(tomcatDirectory.getPath(), "build.xml");
     private static final Path buildCopyXmlPath = Paths.get(tomcatDirectory.getPath(), "build-copy.xml");
 
-    private static final Path buildXml2Path = Paths.get(tomcatDirectory.getPath(), "modules", "jdbc-pool", "build.xml");
-    private static final Path buildCopyXml2Path = Paths.get(tomcatDirectory.getPath(), "modules", "jdbc-pool", "build-copy.xml");
+    private static final Path buildXml2Path = Paths.get(jdbcDirectory.getPath(), "build.xml");
+    private static final Path buildCopyXml2Path = Paths.get(jdbcDirectory.getPath(), "build-copy.xml");
 
     @BeforeAll
     static void prepareFiles() {
@@ -65,17 +68,21 @@ public class TestTomcatBuildfileEditor
     }
 
     static void executePrepareBuildfile() {
-        PeassFolders peassFolders = new PeassFolders(tomcatPeassDirectory);
-        ProjectModules projectModules = new ProjectModules(tomcatDirectory);
+        PeassFolders peassFolders = new PeassFolders(tomcatDirectory);
+        
+        List<File> modules = new ArrayList<>();
+        modules.add(tomcatDirectory);
+        modules.add(jdbcDirectory);
+        ProjectModules projectModules = new ProjectModules(modules);
 
         MeasurementConfig measurementConfig = new MeasurementConfig(1);
         measurementConfig.getKiekerConfig().setUseKieker(true);
         JUnitTestTransformer testTransformer = new JUnitTestTransformer(tomcatDirectory, measurementConfig);
         testTransformer.determineVersionsForPaths(projectModules.getModules());
 
-        TomcatBuildfileEditor tomcatBuildfileEditor = new TomcatBuildfileEditor(testTransformer, projectModules, peassFolders);
+        TomcatBuildEditor tomcatBuildConfigEditor = new TomcatBuildEditor(testTransformer, projectModules, peassFolders);
 
-        tomcatBuildfileEditor.prepareBuildfile();
+        tomcatBuildConfigEditor.prepareBuild();
     }
 
     @AfterAll
