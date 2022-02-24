@@ -11,7 +11,7 @@ done < "$filename"
 if [ "$1" = "select" ]; then
   ./peass-ant select -folder ../tomcat/ -classFolder java:src/main/java:webapps/examples/WEB-INF/classes:webapps/examples/jsp/plugin/applet -testClassFolder test \
     -testExecutor de.stro18.peass_ant.executor.AntTestExecutor -testTransformer de.dagere.peass.testtransformation.JUnitTestTransformer \
-    -startversion 6cf20b4a83f1e5b2ae86525b6b96389e801776b2 -endversion b1ca09f34d0c22727bb5082053c7ae23c30ec8f2 -threads 1 -traceSizeInMb 10 -timeout 2 \
+    -startversion 6cf20b4a83f1e5b2ae86525b6b96389e801776b2 -endversion b1ca09f34d0c22727bb5082053c7ae23c30ec8f2 -threads 2 -traceSizeInMb 10 -timeout 2 \
     -includes org.apache.* -excludes '*$*' $excluded
 elif [ "$1" = "measure" ]; then
   ./peass-ant measure -folder ../tomcat/ -classFolder java:src/main/java:webapps/examples/WEB-INF/classes:webapps/examples/jsp/plugin/applet -testClassFolder test \
