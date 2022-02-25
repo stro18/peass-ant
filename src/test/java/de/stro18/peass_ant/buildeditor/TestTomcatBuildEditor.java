@@ -137,7 +137,7 @@ public class TestTomcatBuildEditor
         Document doc = createDom(buildXmlPath.toFile());
 
         boolean peassClasspathExists = false;
-        boolean webExamplesClasspathExists = false;
+        boolean tomcatClassesExtendedClasspathConatainsPeassClasspath = false;
         boolean compileClasspathContainsPeassClasspath = false;
 
         NodeList listOfPaths = doc.getElementsByTagName("path");
@@ -154,12 +154,13 @@ public class TestTomcatBuildEditor
                         break;
                     }
                 }
-            } else if (idNode != null && idNode.getTextContent().equals("web-examples.classpath")) {
+            } else if (idNode != null && idNode.getTextContent().equals("tomcat.classes.extended.classpath")) {
                 List<Element> listOfPathElements = getChildElements(path);
 
                 for (Element pathElement: listOfPathElements) {
-                    if (pathElement.getAttributes().getNamedItem("refid").getTextContent().equals("peass.classpath")) {
-                        webExamplesClasspathExists = true;
+                    if (pathElement.getAttributes().getNamedItem("refid") != null 
+                            && pathElement.getAttributes().getNamedItem("refid").getTextContent().equals("peass.classpath")) {
+                        tomcatClassesExtendedClasspathConatainsPeassClasspath = true;
                         break;
                     }
                 }
@@ -167,8 +168,8 @@ public class TestTomcatBuildEditor
                 List<Element> listOfPathElements = getChildElements(path);
 
                 for (Element pathElement: listOfPathElements) {
-                    if (pathElement.getAttributes().getNamedItem("refid") != null && pathElement.getAttributes()
-                            .getNamedItem("refid").getTextContent().equals("peass.classpath")) {
+                    if (pathElement.getAttributes().getNamedItem("refid") != null 
+                            && pathElement.getAttributes().getNamedItem("refid").getTextContent().equals("peass.classpath")) {
                         compileClasspathContainsPeassClasspath = true;
                         break;
                     }
@@ -177,7 +178,7 @@ public class TestTomcatBuildEditor
         }
 
         Assertions.assertTrue(peassClasspathExists);
-        Assertions.assertTrue(webExamplesClasspathExists);
+        Assertions.assertTrue(tomcatClassesExtendedClasspathConatainsPeassClasspath);
         Assertions.assertTrue(compileClasspathContainsPeassClasspath);
     }
 

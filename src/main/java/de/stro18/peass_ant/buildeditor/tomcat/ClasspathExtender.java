@@ -12,27 +12,33 @@ import java.util.List;
 
 public class ClasspathExtender {
 
-    public void addDependenciesToClasspaths(Document doc, List<RequiredDependency> requiredDependencies) {
-        createPeassClasspath(doc, requiredDependencies, "${base.path}");
+    public void extendCompileAndTomcatClasspath(Document doc) {
+        Element peassClasspathRefElement = doc.createElement("path");
+        peassClasspathRefElement.setAttribute("refid", "peass.classpath");
+        Element peassClasspathRefElementClone = (Element) peassClasspathRefElement.cloneNode(false);
 
-        Element webExamplesClasspathElement = doc.createElement("path");
-        webExamplesClasspathElement.setAttribute("id", "web-examples.classpath");
+        Node path = XmlUtil.getNodeByXPath(doc, "//path[@id='compile.classpath']");
+        path.appendChild(peassClasspathRefElement);
 
-        Element tomcatClasspathElement = doc.createElement("path");
-        tomcatClasspathElement.setAttribute("refid", "tomcat.classpath");
-        webExamplesClasspathElement.appendChild(tomcatClasspathElement);
+        Node tomcatClasspath = XmlUtil.getNodeByXPath(doc, "//path[@id='tomcat.classpath']");
+        if (tomcatClasspath != null) {
+            tomcatClasspath.appendChild(peassClasspathRefElementClone);
+        }
+    }
+    
+    public void createTomcatClassesExtendedClasspath(Document doc) {
+        Element tomcatClassesExtendedClasspath = doc.createElement("path");
+        tomcatClassesExtendedClasspath.setAttribute("id", "tomcat.classes.extended.classpath");
+        
+        Element tomcatClassesPathElement = doc.createElement("pathelement");
+        tomcatClassesPathElement.setAttribute("path", "${tomcat.classes}");
+        tomcatClassesExtendedClasspath.appendChild(tomcatClassesPathElement);
 
         Element peassClasspathRefElement = doc.createElement("path");
         peassClasspathRefElement.setAttribute("refid", "peass.classpath");
-        webExamplesClasspathElement.appendChild(peassClasspathRefElement);
+        tomcatClassesExtendedClasspath.appendChild(peassClasspathRefElement);
 
-        doc.getDocumentElement().appendChild(webExamplesClasspathElement);
-
-        Node path = XmlUtil.getNodeByXPath(doc, "//path[@id='compile.classpath']");
-
-        Element peassClasspathRefElement2 = doc.createElement("path");
-        peassClasspathRefElement2.setAttribute("refid", "peass.classpath");
-        path.appendChild(peassClasspathRefElement2);
+        doc.getDocumentElement().appendChild(tomcatClassesExtendedClasspath);
     }
 
     public void changeWebappExamplesClasspath(Document doc) {
@@ -42,16 +48,17 @@ public class ClasspathExtender {
             for (Node javacNode : javacNodes) {
                 Element javacElement = (Element) javacNode;
                 javacElement.removeAttribute("classpath");
-                javacElement.setAttribute("classpathref", "web-examples.classpath");
+                javacElement.setAttribute("classpathref", "tomcat.classes.extended.classpath");
             }
         }
     }
 
     public void changeTxt2HtmlClasspath(Document doc) {
         Element taskDefElement = (Element) XmlUtil.getNodeByXPath(doc, "//taskdef[@name='txt2html']");
+        
         if (taskDefElement != null) {
             taskDefElement.removeAttribute("classpath");
-            taskDefElement.setAttribute("classpathref", "web-examples.classpath");
+            taskDefElement.setAttribute("classpathref", "tomcat.classes.extended.classpath");
         }
     }
 
