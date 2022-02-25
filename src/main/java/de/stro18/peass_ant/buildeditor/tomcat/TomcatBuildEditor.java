@@ -7,9 +7,6 @@ import de.dagere.peass.testtransformation.JUnitTestTransformer;
 import de.stro18.peass_ant.buildeditor.AntBuildEditor;
 import de.stro18.peass_ant.buildeditor.fileutils.XmlUtil;
 import de.stro18.peass_ant.buildeditor.helper.TransitiveDependencyFinder;
-import de.stro18.peass_ant.buildeditor.tomcat.ClasspathExtender;
-import de.stro18.peass_ant.buildeditor.tomcat.DownloadAdder;
-import de.stro18.peass_ant.buildeditor.tomcat.PropertySetter;
 import org.w3c.dom.*;
 import java.io.File;
 import java.util.List;
@@ -83,7 +80,9 @@ public class TomcatBuildEditor extends AntBuildEditor {
         Document doc = XmlUtil.createDom(buildfile);
 
         ClasspathExtender classpathExtender = new ClasspathExtender();
-        classpathExtender.addDependenciesToClasspaths(doc, requiredDependencies);
+        classpathExtender.createPeassClasspath(doc, requiredDependencies, "${base.path}");
+        classpathExtender.extendCompileAndTomcatClasspath(doc);
+        classpathExtender.createTomcatClassesExtendedClasspath(doc);
         classpathExtender.changeWebappExamplesClasspath(doc);
         classpathExtender.changeTxt2HtmlClasspath(doc);
 
