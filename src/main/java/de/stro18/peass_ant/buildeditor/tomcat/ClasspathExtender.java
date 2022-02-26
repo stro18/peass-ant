@@ -12,18 +12,12 @@ import java.util.List;
 
 public class ClasspathExtender {
 
-    public void extendCompileAndTomcatClasspath(Document doc) {
+    public void extendCompileClasspath(Document doc) {
         Element peassClasspathRefElement = doc.createElement("path");
         peassClasspathRefElement.setAttribute("refid", "peass.classpath");
-        Element peassClasspathRefElementClone = (Element) peassClasspathRefElement.cloneNode(false);
 
         Node path = XmlUtil.getNodeByXPath(doc, "//path[@id='compile.classpath']");
         path.appendChild(peassClasspathRefElement);
-
-        Node tomcatClasspath = XmlUtil.getNodeByXPath(doc, "//path[@id='tomcat.classpath']");
-        if (tomcatClasspath != null) {
-            tomcatClasspath.appendChild(peassClasspathRefElementClone);
-        }
     }
     
     public void createTomcatClassesExtendedClasspath(Document doc) {

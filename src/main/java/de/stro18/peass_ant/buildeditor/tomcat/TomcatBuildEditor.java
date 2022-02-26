@@ -81,7 +81,7 @@ public class TomcatBuildEditor extends AntBuildEditor {
 
         ClasspathExtender classpathExtender = new ClasspathExtender();
         classpathExtender.createPeassClasspath(doc, requiredDependencies, "${base.path}");
-        classpathExtender.extendCompileAndTomcatClasspath(doc);
+        classpathExtender.extendCompileClasspath(doc);
         classpathExtender.createTomcatClassesExtendedClasspath(doc);
         classpathExtender.changeWebappExamplesClasspath(doc);
         classpathExtender.changeTxt2HtmlClasspath(doc);
