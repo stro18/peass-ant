@@ -10,7 +10,7 @@ import java.util.List;
 
 public class DownloadAdder {
     
-    private Document doc;
+    private final Document doc;
     
     public DownloadAdder(Document doc) {
         this.doc = doc;
