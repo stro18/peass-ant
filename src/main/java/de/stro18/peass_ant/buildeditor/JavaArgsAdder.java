@@ -8,8 +8,14 @@ import org.w3c.dom.Node;
 import java.util.List;
 
 public class JavaArgsAdder {
+    
+    private final Document doc;
+    
+    public JavaArgsAdder(Document doc) {
+        this.doc = doc;
+    }
 
-    public void addJvmArguments(Document doc, String[] requiredJvmArgs) {
+    public void addJvmArguments(String[] requiredJvmArgs) {
         List<Node> jUnitElementList = XmlUtil.getNodeListByXPath(doc,"//junit");
         
         for (Node jUnitElement : jUnitElementList) {
