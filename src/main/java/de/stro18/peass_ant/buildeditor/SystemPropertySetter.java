@@ -7,11 +7,11 @@ import org.w3c.dom.Node;
 
 import java.util.List;
 
-public class JavaArgsAdder {
+public class SystemPropertySetter {
     
     private final Document doc;
     
-    public JavaArgsAdder(Document doc) {
+    public SystemPropertySetter(Document doc) {
         this.doc = doc;
     }
 

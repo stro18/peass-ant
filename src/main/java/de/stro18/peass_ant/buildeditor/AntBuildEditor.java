@@ -58,7 +58,7 @@ public abstract class AntBuildEditor {
         AntArgLineBuilder argLineBuilder = new AntArgLineBuilder(testTransformer, module);
         String[] requiredJvmArgs = argLineBuilder.buildArglineAnt(lastTmpFile);
         
-        JavaArgsAdder argsAdder = new JavaArgsAdder(doc);
+        SystemPropertySetter argsAdder = new SystemPropertySetter(doc);
         argsAdder.addJvmArguments(requiredJvmArgs);
 
         XmlUtil.transformXmlFile(doc, buildfile);
