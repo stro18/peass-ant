@@ -31,12 +31,12 @@ public class TomcatBuildEditor extends AntBuildEditor {
         }
         
         Document doc = XmlUtil.createDom(buildfile);
-        DownloadAdder downloadAdder = new DownloadAdder();
+        DownloadAdder downloadAdder = new DownloadAdder(doc);
 
         if (module.getName().equals(folders.getProjectFolder().getName())) {
-            downloadAdder.addDependenciesToDownloads(doc, "download-compile", requiredDependencies);
+            downloadAdder.addDependenciesToDownloads("download-compile", requiredDependencies);
         } else if (module.getName().equals("jdbc-pool")) {
-            downloadAdder.addDependenciesToDownloads(doc, "download", requiredDependencies);
+            downloadAdder.addDependenciesToDownloads("download", requiredDependencies);
         }
         
         XmlUtil.transformXmlFile(doc, buildfile);
