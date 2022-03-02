@@ -2,6 +2,7 @@ package de.stro18.peass_ant.buildeditor.tomcat;
 
 import de.dagere.peass.execution.utils.RequiredDependency;
 import de.stro18.peass_ant.buildeditor.fileutils.XmlUtil;
+import de.stro18.peass_ant.buildeditor.helper.DependencyFormatter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -34,7 +35,7 @@ public class DownloadAdder {
     }
     
     private void addSourceFileParam(Element antcallElement, RequiredDependency dependency) {
-        String artifactName = getDependencyName(dependency);
+        String artifactName = DependencyFormatter.getDependencyName(dependency);
         
         Element sourcefileParam;
         if (dependency.getArtifactId().equals("kieker")) {
@@ -51,7 +52,7 @@ public class DownloadAdder {
     }
     
     private String addDestDirParam(Element antcallElement, RequiredDependency dependency) {
-        String artifactName = getDependencyName(dependency);
+        String artifactName = DependencyFormatter.getDependencyName(dependency);
         
         String destdir = "${base.path}/" + artifactName;
         Element destdirParam = XmlUtil.createParamElement(doc, "destdir",  destdir);
@@ -62,26 +63,9 @@ public class DownloadAdder {
     }
     
     private void addDestFileParam(Element antcallElement, RequiredDependency dependency, String destdir) {
-        String artifactName = getDependencyName(dependency);
+        String artifactName = DependencyFormatter.getDependencyName(dependency);
         
         Element destfileParam = XmlUtil.createParamElement(doc, "destfile", destdir + "/" + artifactName + ".jar");
         antcallElement.appendChild(destfileParam);
-    }
-
-    private String getDependencyName(RequiredDependency dependency) {
-        String artifactName;
-        
-        if (dependency.getClassifier() == null) {
-            artifactName = dependency.getArtifactId() + "-" + dependency.getVersion();
-        } else {
-            artifactName = dependency.getArtifactId() + "-" + dependency.getVersion() + "-" +
-                    dependency.getClassifier();
-        }
-
-        if (dependency.getArtifactId().equals("kieker")) {
-            artifactName = artifactName.replace("SNAPSHOT", "20211229.121939-97");
-        }
-        
-        return artifactName;
     }
 }
