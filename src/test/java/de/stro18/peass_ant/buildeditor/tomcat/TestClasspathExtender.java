@@ -78,37 +78,20 @@ public class TestClasspathExtender {
     }
     
     private boolean classpathExists(Document doc, String classpath) {
-        NodeList listOfPaths = doc.getElementsByTagName("path");
-        for (int i = 0; i < listOfPaths.getLength(); i++) {
-            Node path = listOfPaths.item(i);
+        String xPathExpressionTemplate = "//path[@id='%s']";
+        String xPathExpression = String.format(xPathExpressionTemplate, classpath);
 
-            Node idNode = path.getAttributes().getNamedItem("id");
-            if (idNode != null && idNode.getTextContent().equals(classpath)) {
-                return true;
-            }
-        }
-
-        return false;
+        Node classpathFound = XmlUtil.getNodeByXPath(doc,xPathExpression);
+        
+        return classpathFound != null;
     }
     
     private boolean classpathContainsPeassClasspath(Document doc, String classpath) {
-        NodeList listOfPaths = doc.getElementsByTagName("path");
-        for (int i = 0; i < listOfPaths.getLength(); i++) {
-            Node path = listOfPaths.item(i);
-
-            Node idNode = path.getAttributes().getNamedItem("id");
-            if (idNode != null && idNode.getTextContent().equals(classpath)) {
-                List<Element> listOfPathElements = getChildElements(path);
-
-                for (Element pathElement: listOfPathElements) {
-                    if (pathElement.getAttributes().getNamedItem("refid") != null
-                            && pathElement.getAttributes().getNamedItem("refid").getTextContent().equals("peass.classpath")) {
-                        return true;
-                    }
-                }
-            }
-        }
+        String xPathExpressionTemplate = "//path[@id='%s']/path[@refid='peass.classpath']";
+        String xPathExpression = String.format(xPathExpressionTemplate, classpath);
         
-        return false;
+        Node classpathContainingPeassClasspath = XmlUtil.getNodeByXPath(doc,xPathExpression);
+        
+        return classpathContainingPeassClasspath != null;
     }
 }

@@ -69,24 +69,12 @@ public class TestDownloadAdder {
     }
     
     private boolean downloadAdded(Document doc, RequiredDependency dependency) {
-        NodeList listOfTargets = doc.getElementsByTagName("target");
-        for (int i = 0; i < listOfTargets.getLength(); i++) {
-            Node target = listOfTargets.item(i);
+        String xPathExpressionTemplate = "//target[@name='download-compile']/antcall/param[@name='sourcefile' and contains(@value,'%s')]";
+        String xPathExpression = String.format(xPathExpressionTemplate, DependencyFormatter.getDependencyName(dependency));
 
-            if (target.getAttributes().getNamedItem("name").getTextContent().equals("download-compile")) {
-                List<Element> listOfDownloads = TestUtil.getChildElements(target);
-
-                for (Element download : listOfDownloads) {
-                    Element sourcefileOfDownload = TestUtil.getFirstChildElement(download);
-
-                    if (sourcefileOfDownload.getAttributes().getNamedItem("value").getTextContent().contains(DependencyFormatter.getDependencyName(dependency))) {
-                        return true;
-                    }
-                }
-            }
-        }
+        Node downloadAdded = XmlUtil.getNodeByXPath(doc,xPathExpression);
         
-        return false;
+        return downloadAdded != null;
     }
     
     
