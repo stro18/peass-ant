@@ -7,15 +7,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
-import static de.stro18.peass_ant.TestUtil.getChildElements;
 
 public class TestClasspathExtender {
 
@@ -75,6 +71,20 @@ public class TestClasspathExtender {
         boolean compileClasspathContainsPeassClasspath = classpathContainsPeassClasspath(doc, "compile.classpath");
         
         Assertions.assertTrue(compileClasspathContainsPeassClasspath);
+    }
+
+    @Test
+    public void testJdbcClasspath() {
+        File buildfile = new File(TARGET_RESOURCES_FOLDER, "tomcat-example" + File.separator + "modules" + File.separator + "jdbc-pool" + File.separator 
+                + "build.xml");
+        Document doc = XmlUtil.createDom(buildfile);
+
+        ClasspathExtender classpathExtender = new ClasspathExtender(doc);
+        classpathExtender.extendJdbcClasspath();
+
+        boolean jdbcClasspathContainsPeassClasspath = classpathContainsPeassClasspath(doc, "tomcat.jdbc.classpath");
+
+        Assertions.assertTrue(jdbcClasspathContainsPeassClasspath);
     }
     
     private boolean classpathExists(Document doc, String classpath) {

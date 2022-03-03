@@ -78,7 +78,7 @@ public class ClasspathExtender {
         doc.getDocumentElement().appendChild(peassClasspathElement);
     }
 
-    public void changeJdbcClasspath() {
+    public void extendJdbcClasspath() {
         NodeList listOfPaths = doc.getElementsByTagName("path");
 
         for (int i = 0; i < listOfPaths.getLength(); i++) {

@@ -96,7 +96,7 @@ public class TomcatBuildEditor extends AntBuildEditor {
 
         ClasspathExtender classpathExtender = new ClasspathExtender(doc);
         classpathExtender.createPeassClasspath(requiredDependencies, "${user.home}" + File.separator + "tomcat-build-libs");
-        classpathExtender.changeJdbcClasspath();
+        classpathExtender.extendJdbcClasspath();
 
         XmlUtil.transformXmlFile(doc, buildfile);
     }
