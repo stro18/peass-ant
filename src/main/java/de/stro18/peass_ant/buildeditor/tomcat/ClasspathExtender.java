@@ -2,6 +2,7 @@ package de.stro18.peass_ant.buildeditor.tomcat;
 
 import de.dagere.peass.execution.utils.RequiredDependency;
 import de.stro18.peass_ant.buildeditor.fileutils.XmlUtil;
+import de.stro18.peass_ant.buildeditor.helper.DependencyFormatter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -11,8 +12,14 @@ import java.io.File;
 import java.util.List;
 
 public class ClasspathExtender {
+    
+    private final Document doc;
+    
+    public ClasspathExtender(Document doc) {
+        this.doc = doc;
+    }
 
-    public void extendCompileClasspath(Document doc) {
+    public void extendCompileClasspath() {
         Element peassClasspathRefElement = doc.createElement("path");
         peassClasspathRefElement.setAttribute("refid", "peass.classpath");
 
@@ -20,7 +27,7 @@ public class ClasspathExtender {
         path.appendChild(peassClasspathRefElement);
     }
     
-    public void createTomcatClassesExtendedClasspath(Document doc) {
+    public void createTomcatClassesExtendedClasspath() {
         Element tomcatClassesExtendedClasspath = doc.createElement("path");
         tomcatClassesExtendedClasspath.setAttribute("id", "tomcat.classes.extended.classpath");
         
@@ -35,7 +42,7 @@ public class ClasspathExtender {
         doc.getDocumentElement().appendChild(tomcatClassesExtendedClasspath);
     }
 
-    public void changeWebappExamplesClasspath(Document doc) {
+    public void changeWebappExamplesClasspath() {
         List<Node> javacNodes = XmlUtil.getNodeListByXPath(doc, "//target[@name='compile-webapp-examples']/javac");
 
         if (!javacNodes.isEmpty()) {
@@ -47,7 +54,7 @@ public class ClasspathExtender {
         }
     }
 
-    public void changeTxt2HtmlClasspath(Document doc) {
+    public void changeTxt2HtmlClasspath() {
         Element taskDefElement = (Element) XmlUtil.getNodeByXPath(doc, "//taskdef[@name='txt2html']");
         
         if (taskDefElement != null) {
@@ -56,26 +63,22 @@ public class ClasspathExtender {
         }
     }
 
-    public void createPeassClasspath(Document doc, List<RequiredDependency> requiredDependencies, String depsFolder) {
+    public void createPeassClasspath(List<RequiredDependency> requiredDependencies, String depsFolder) {
         Element peassClasspathElement = doc.createElement("path");
         peassClasspathElement.setAttribute("id", "peass.classpath");
 
         for (RequiredDependency dependency : requiredDependencies) {
-            String artifactName = getDependencyName(dependency);
-
-            if (dependency.getArtifactId().equals("kieker")) {
-                artifactName = artifactName.replace("SNAPSHOT", "20211229.121939-97");
-            }
+            String artifactName = DependencyFormatter.getDependencyName(dependency);
+            
             Element pathElement = doc.createElement("pathelement");
-            pathElement.setAttribute("location", depsFolder + File.separator + artifactName + File.separator +
-                    artifactName + ".jar");
+            pathElement.setAttribute("location", depsFolder + File.separator + artifactName + File.separator + artifactName + ".jar");
             peassClasspathElement.appendChild(pathElement);
         }
 
         doc.getDocumentElement().appendChild(peassClasspathElement);
     }
 
-    public void changeJdbcClasspath(Document doc) {
+    public void changeJdbcClasspath() {
         NodeList listOfPaths = doc.getElementsByTagName("path");
 
         for (int i = 0; i < listOfPaths.getLength(); i++) {
@@ -89,15 +92,6 @@ public class ClasspathExtender {
 
                 break;
             }
-        }
-    }
-
-    private String getDependencyName(RequiredDependency dependency) {
-        if (dependency.getClassifier() == null) {
-            return dependency.getArtifactId() + "-" + dependency.getVersion();
-        } else {
-            return dependency.getArtifactId() + "-" + dependency.getVersion() + "-" +
-                    dependency.getClassifier();
         }
     }
 }

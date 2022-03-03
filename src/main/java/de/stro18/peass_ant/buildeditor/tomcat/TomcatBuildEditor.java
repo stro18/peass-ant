@@ -31,12 +31,12 @@ public class TomcatBuildEditor extends AntBuildEditor {
         }
         
         Document doc = XmlUtil.createDom(buildfile);
-        DownloadAdder downloadAdder = new DownloadAdder();
+        DownloadAdder downloadAdder = new DownloadAdder(doc);
 
         if (module.getName().equals(folders.getProjectFolder().getName())) {
-            downloadAdder.addDependenciesToDownloads(doc, "download-compile", requiredDependencies);
+            downloadAdder.addDependenciesToDownloads("download-compile", requiredDependencies);
         } else if (module.getName().equals("jdbc-pool")) {
-            downloadAdder.addDependenciesToDownloads(doc, "download", requiredDependencies);
+            downloadAdder.addDependenciesToDownloads("download", requiredDependencies);
         }
         
         XmlUtil.transformXmlFile(doc, buildfile);
@@ -79,12 +79,12 @@ public class TomcatBuildEditor extends AntBuildEditor {
         File buildfile = new File(module, "build.xml");
         Document doc = XmlUtil.createDom(buildfile);
 
-        ClasspathExtender classpathExtender = new ClasspathExtender();
-        classpathExtender.createPeassClasspath(doc, requiredDependencies, "${base.path}");
-        classpathExtender.extendCompileClasspath(doc);
-        classpathExtender.createTomcatClassesExtendedClasspath(doc);
-        classpathExtender.changeWebappExamplesClasspath(doc);
-        classpathExtender.changeTxt2HtmlClasspath(doc);
+        ClasspathExtender classpathExtender = new ClasspathExtender(doc);
+        classpathExtender.createPeassClasspath(requiredDependencies, "${base.path}");
+        classpathExtender.extendCompileClasspath();
+        classpathExtender.createTomcatClassesExtendedClasspath();
+        classpathExtender.changeWebappExamplesClasspath();
+        classpathExtender.changeTxt2HtmlClasspath();
 
         XmlUtil.transformXmlFile(doc, buildfile);
         
@@ -94,9 +94,9 @@ public class TomcatBuildEditor extends AntBuildEditor {
         File buildfile = new File(module, "build.xml");
         Document doc = XmlUtil.createDom(buildfile);
 
-        ClasspathExtender classpathExtender = new ClasspathExtender();
-        classpathExtender.createPeassClasspath(doc, requiredDependencies, "${user.home}" + File.separator + "tomcat-build-libs");
-        classpathExtender.changeJdbcClasspath(doc);
+        ClasspathExtender classpathExtender = new ClasspathExtender(doc);
+        classpathExtender.createPeassClasspath(requiredDependencies, "${user.home}" + File.separator + "tomcat-build-libs");
+        classpathExtender.changeJdbcClasspath();
 
         XmlUtil.transformXmlFile(doc, buildfile);
     }
