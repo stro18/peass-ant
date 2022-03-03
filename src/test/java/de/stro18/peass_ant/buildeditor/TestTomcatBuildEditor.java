@@ -101,56 +101,6 @@ public class TestTomcatBuildEditor
     }
 
     @Test
-    public void testClasspaths() {
-        Document doc = createDom(buildXmlPath.toFile());
-
-        boolean peassClasspathExists = false;
-        boolean tomcatClassesExtendedClasspathConatainsPeassClasspath = false;
-        boolean compileClasspathContainsPeassClasspath = false;
-
-        NodeList listOfPaths = doc.getElementsByTagName("path");
-        for (int i = 0; i < listOfPaths.getLength(); i++) {
-            Node path = listOfPaths.item(i);
-
-            Node idNode = path.getAttributes().getNamedItem("id");
-            if (idNode != null && idNode.getTextContent().equals("peass.classpath")) {
-                List<Element> listOfPathElements = getChildElements(path);
-
-                for (Element pathElement: listOfPathElements) {
-                    if (pathElement.getAttributes().getNamedItem("location").getTextContent().contains("kopeme-core")) {
-                        peassClasspathExists = true;
-                        break;
-                    }
-                }
-            } else if (idNode != null && idNode.getTextContent().equals("tomcat.classes.extended.classpath")) {
-                List<Element> listOfPathElements = getChildElements(path);
-
-                for (Element pathElement: listOfPathElements) {
-                    if (pathElement.getAttributes().getNamedItem("refid") != null 
-                            && pathElement.getAttributes().getNamedItem("refid").getTextContent().equals("peass.classpath")) {
-                        tomcatClassesExtendedClasspathConatainsPeassClasspath = true;
-                        break;
-                    }
-                }
-            } else if (idNode != null && idNode.getTextContent().equals("compile.classpath")) {
-                List<Element> listOfPathElements = getChildElements(path);
-
-                for (Element pathElement: listOfPathElements) {
-                    if (pathElement.getAttributes().getNamedItem("refid") != null 
-                            && pathElement.getAttributes().getNamedItem("refid").getTextContent().equals("peass.classpath")) {
-                        compileClasspathContainsPeassClasspath = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        Assertions.assertTrue(peassClasspathExists);
-        Assertions.assertTrue(tomcatClassesExtendedClasspathConatainsPeassClasspath);
-        Assertions.assertTrue(compileClasspathContainsPeassClasspath);
-    }
-
-    @Test
     public void testArgline() {
         Document doc = createDom(buildXmlPath.toFile());
 
