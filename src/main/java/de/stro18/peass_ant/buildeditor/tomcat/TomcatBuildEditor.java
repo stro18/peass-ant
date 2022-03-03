@@ -17,9 +17,8 @@ public class TomcatBuildEditor extends AntBuildEditor {
 
     public TomcatBuildEditor(final JUnitTestTransformer testTransformer, final ProjectModules modules, final PeassFolders folders) {
         super(testTransformer, modules, folders);
-
-        TransitiveDependencyFinder dependencyFinder = new TransitiveDependencyFinder();
-        requiredDependencies = dependencyFinder.getAllTransitives(testTransformer.isJUnit3());
+        
+        requiredDependencies = TransitiveDependencyFinder.getAllTransitives(testTransformer.isJUnit3());
     }
 
     @Override

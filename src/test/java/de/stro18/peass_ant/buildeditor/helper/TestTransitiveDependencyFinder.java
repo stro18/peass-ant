@@ -19,8 +19,7 @@ public class TestTransitiveDependencyFinder {
     }
     
     private boolean dependencyFound(String artifactId) {
-        TransitiveDependencyFinder dependencyFinder = new TransitiveDependencyFinder();
-        List<RequiredDependency> requiredDependencies = dependencyFinder.getAllTransitives(false);
+        List<RequiredDependency> requiredDependencies = TransitiveDependencyFinder.getAllTransitives(false);
 
         for (RequiredDependency dependency : requiredDependencies) {
             if (dependency.getArtifactId().equals(artifactId)) {

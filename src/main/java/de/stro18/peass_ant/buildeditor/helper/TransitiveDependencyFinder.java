@@ -10,12 +10,9 @@ import java.util.List;
 
 public class TransitiveDependencyFinder {
 
-    public final boolean jenkins = false;
+    public static final boolean jenkins = false;
 
-    public TransitiveDependencyFinder() {
-    }
-
-    public List<RequiredDependency> getAllTransitives(final boolean isJUnit3) {
+    public static List<RequiredDependency> getAllTransitives(final boolean isJUnit3) {
         if (jenkins) {
             return getConstantDependencies();
         } else {
@@ -23,21 +20,13 @@ public class TransitiveDependencyFinder {
         }
     }
 
-    private List<RequiredDependency> getTransitiveDependencies(final boolean isJUnit3) {
+    private static List<RequiredDependency> getTransitiveDependencies(final boolean isJUnit3) {
         List<RequiredDependency> requiredNonTransitiveDeps = RequiredDependency.getAll(isJUnit3);
 
         List<String> requiredNonTransitiveDepsAsStrings = new ArrayList<>();
         for (RequiredDependency dependency : requiredNonTransitiveDeps) {
-            String dependencyStr;
-            if (dependency.getClassifier() == null) {
-                dependencyStr = dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" +
-                        dependency.getVersion();
-            } else {
-                dependencyStr = dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + "jar" +
-                        ":" + dependency.getClassifier() + ":" + dependency.getVersion();
-            }
-
-            requiredNonTransitiveDepsAsStrings.add(dependencyStr);
+            String mavenCoordinates = getMavenCoordinates(dependency); 
+            requiredNonTransitiveDepsAsStrings.add(mavenCoordinates);
         }
 
         MavenCoordinate[] requiredTransitiveDepsAsCoordinates = Maven.resolver().resolve(requiredNonTransitiveDepsAsStrings.toArray(new String[]{}))
@@ -45,16 +34,15 @@ public class TransitiveDependencyFinder {
 
         List<RequiredDependency> requiredTransitiveDeps = new LinkedList<>();
         for (MavenCoordinate coordinate : requiredTransitiveDepsAsCoordinates) {
-            System.out.println(coordinate.toCanonicalForm());
-            requiredTransitiveDeps.add(new RequiredDependency(coordinate.getGroupId(),
-                    coordinate.getArtifactId(), coordinate.getVersion(), null,
-                    coordinate.getClassifier().isEmpty() ? null : coordinate.getClassifier()));
+            RequiredDependency dependency = getRequiredDependency(coordinate);
+            requiredTransitiveDeps.add(dependency);
         }
 
         return requiredTransitiveDeps;
     }
 
-    private List<RequiredDependency> getConstantDependencies() {
+    // Necessary because ShrinkWrap does not work with classloader of Jenkins
+    private static List<RequiredDependency> getConstantDependencies() {
         List<RequiredDependency> requiredDependencies = new LinkedList<>();
         for (String dependencyStr : constantDependencies()) {
             String[] dependencyParts = dependencyStr.split(":");
@@ -124,5 +112,24 @@ public class TransitiveDependencyFinder {
         };
 
         return dependencies;
+    }
+    
+    private static String getMavenCoordinates(RequiredDependency dependency) {
+        String dependencyStr;
+        if (dependency.getClassifier() == null) {
+            dependencyStr = dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" +
+                    dependency.getVersion();
+        } else {
+            dependencyStr = dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + "jar" +
+                    ":" + dependency.getClassifier() + ":" + dependency.getVersion();
+        }
+        
+        return dependencyStr;
+    }
+    
+    private static RequiredDependency getRequiredDependency(MavenCoordinate coordinate) {
+        return new RequiredDependency(coordinate.getGroupId(),
+                coordinate.getArtifactId(), coordinate.getVersion(), null,
+                coordinate.getClassifier().isEmpty() ? null : coordinate.getClassifier());
     }
 }
