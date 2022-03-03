@@ -41,7 +41,11 @@ public abstract class AntBuildEditor {
             this.addDependencyDownloads(module);
             this.extendClasspaths(module);
             this.changeProperties(module);
-            this.addJvmArguments(module);
+            
+            if (testTransformer.getConfig().isUseKieker()) {
+                this.addJvmArguments(module);
+            }
+            
             this.additionalChanges(module);
         }
     }
