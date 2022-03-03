@@ -101,38 +101,6 @@ public class TestTomcatBuildEditor
     }
 
     @Test
-    public void testDownloadsAdded() {
-        Document doc = createDom(buildXmlPath.toFile());
-
-        boolean kopemeDownloadExists = false;
-        boolean aspectjDownloadExists = false;
-
-        NodeList listOfTargets = doc.getElementsByTagName("target");
-        for (int i = 0; i < listOfTargets.getLength(); i++) {
-            Node target = listOfTargets.item(i);
-
-            if (target.getAttributes().getNamedItem("name").getTextContent().equals("download-compile")) {
-                List<Element> listOfDownloads = getChildElements(target);
-
-                for (Element download : listOfDownloads) {
-                    Element sourcefileOfDownload = getFirstChildElement(download);
-
-                    if (sourcefileOfDownload.getAttributes().getNamedItem("value").getTextContent().contains("kopeme-core")) {
-                        kopemeDownloadExists = true;
-                    }
-
-                    if (sourcefileOfDownload.getAttributes().getNamedItem("value").getTextContent().contains("aspectjweaver")) {
-                        aspectjDownloadExists = true;
-                    }
-                }
-            }
-        }
-
-        Assertions.assertTrue(kopemeDownloadExists);
-        Assertions.assertTrue(aspectjDownloadExists);
-    }
-
-    @Test
     public void testClasspaths() {
         Document doc = createDom(buildXmlPath.toFile());
 
