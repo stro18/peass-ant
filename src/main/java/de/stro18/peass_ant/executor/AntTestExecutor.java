@@ -1,5 +1,6 @@
 package de.stro18.peass_ant.executor;
 
+import de.dagere.peass.config.MeasurementStrategy;
 import de.dagere.peass.execution.utils.EnvironmentVariables;
 import de.dagere.peass.execution.utils.KoPeMeExecutor;
 import de.dagere.peass.execution.utils.ProjectModules;
@@ -47,6 +48,12 @@ public class AntTestExecutor extends KoPeMeExecutor {
 
     @Override
     public void prepareKoPeMeExecution(File logFile) throws IOException, InterruptedException, XmlPullParserException {
+        File outputFolder = new File(folders.getProjectFolder(), "output");
+        
+        if (testTransformer.getConfig().getMeasurementStrategy().equals(MeasurementStrategy.PARALLEL) && outputFolder.exists()) {
+            return;
+        }
+        
         clean(logFile);
         LOG.debug("Starting Test Transformation");
         prepareKiekerSource();
