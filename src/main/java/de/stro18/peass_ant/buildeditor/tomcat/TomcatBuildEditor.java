@@ -51,20 +51,13 @@ public class TomcatBuildEditor extends AntBuildEditor {
     }
 
     @Override
-    protected void changeProperties(File module) {
+    protected void changeConfig(File module) {
         if (module.getName().equals(folders.getProjectFolder().getName())) {
-            File buildfile = new File(module, "build.xml");
-            Document doc = XmlUtil.createDom(buildfile);
-
-            PropertySetter propertySetter = new PropertySetter();
-            propertySetter.changeProperties(doc);
-
-            XmlUtil.transformXmlFile(doc, buildfile);
-
+            ConfigChanger configChanger = new ConfigChanger();
             File propertiesFile = new File(module, "conf" + File.separator + "catalina.properties");
             
             if (propertiesFile.exists()) {
-                propertySetter.changeCatalinaProperties(propertiesFile);
+                configChanger.changeCatalinaProperties(propertiesFile);
             }
         }
     }

@@ -8,6 +8,7 @@ import de.dagere.peass.folders.PeassFolders;
 import de.dagere.peass.dependency.analysis.data.TestCase;
 import de.dagere.peass.execution.processutils.ProcessBuilderHelper;
 import de.dagere.peass.execution.processutils.ProcessSuccessTester;
+import de.dagere.peass.testtransformation.JUnitTestShortener;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
 import de.stro18.peass_ant.buildeditor.tomcat.TomcatBuildEditor;
 import de.stro18.peass_ant.utils.AntModuleUtil;
@@ -30,17 +31,15 @@ public class AntTestExecutor extends KoPeMeExecutor {
     }
 
     @Override
-    protected void runTest(File moduleFolder, File logFile, TestCase test, String testname, long timeout) {
-        String[] classAndMethod = testname.split("#");
-        
-        final String[] command = new String[] { "ant", "test", "-Dtest.entry=" + classAndMethod[0], "-Dtest.entry.methods=" + classAndMethod[1] };
+    protected void runTest(File moduleFolder, File logFile, TestCase test, String testClass, long timeout) {
+        final String[] command = new String[] { "ant", "test", "-Dexecute.test.nio2=false", "-Dexecute.test.apr=false", "-Dtest.entry=" + testClass};
         ProcessBuilderHelper processBuilderHelper = new ProcessBuilderHelper(env, folders);
         processBuilderHelper.parseParams(test.getParams());
 
         final Process process;
         try {
             process = processBuilderHelper.buildFolderProcess(moduleFolder, logFile, command);
-            execute(testname, timeout, process);
+            execute(testClass, timeout, process);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -131,7 +130,11 @@ public class AntTestExecutor extends KoPeMeExecutor {
 
     @Override
     protected void runMethod(File logFolder, TestCase test, File moduleFolder, long timeout) {
-        final File methodLogFile = getMethodLogFile(logFolder, test);
-        runTest(moduleFolder, methodLogFile, test, test.getExecutable(), timeout);
+        try (final JUnitTestShortener shortener = new JUnitTestShortener(testTransformer, moduleFolder, test.toEntity(), test.getMethod())) {
+            final File methodLogFile = getMethodLogFile(logFolder, test);
+            runTest(moduleFolder, methodLogFile, test, test.getClazz(), timeout);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

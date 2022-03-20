@@ -40,7 +40,7 @@ public abstract class AntBuildEditor {
             
             this.addDependencyDownloads(module);
             this.extendClasspaths(module);
-            this.changeProperties(module);
+            this.changeConfig(module);
             
             if (testTransformer.getConfig().isUseKieker()) {
                 this.addJvmArguments(module);
@@ -72,7 +72,7 @@ public abstract class AntBuildEditor {
     
     protected abstract void extendClasspaths(File module);
     
-    protected abstract void changeProperties(File module);
+    protected abstract void changeConfig(File module);
     
     protected abstract void additionalChanges(File module);
 }
