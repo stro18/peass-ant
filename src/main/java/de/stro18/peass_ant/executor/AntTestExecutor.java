@@ -33,7 +33,7 @@ public class AntTestExecutor extends KoPeMeExecutor {
     protected void runTest(File moduleFolder, File logFile, TestCase test, String testname, long timeout) {
         String[] classAndMethod = testname.split("#");
         
-        final String[] command = new String[] { "ant", "test", "-Dtest.entry=" + classAndMethod[0]};
+        final String[] command = new String[] { "ant", "test", "-Dexecute.test.nio2=false", "-Dexecute.test.apr=false", "-Dtest.entry=" + classAndMethod[0]};
         ProcessBuilderHelper processBuilderHelper = new ProcessBuilderHelper(env, folders);
         processBuilderHelper.parseParams(test.getParams());
 
