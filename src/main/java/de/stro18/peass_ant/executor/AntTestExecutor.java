@@ -7,6 +7,7 @@ import de.dagere.peass.folders.PeassFolders;
 import de.dagere.peass.dependency.analysis.data.TestCase;
 import de.dagere.peass.execution.processutils.ProcessBuilderHelper;
 import de.dagere.peass.execution.processutils.ProcessSuccessTester;
+import de.dagere.peass.testtransformation.JUnitTestShortener;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
 import de.stro18.peass_ant.buildeditor.tomcat.TomcatBuildEditor;
 import de.stro18.peass_ant.utils.AntModuleUtil;
@@ -32,7 +33,7 @@ public class AntTestExecutor extends KoPeMeExecutor {
     protected void runTest(File moduleFolder, File logFile, TestCase test, String testname, long timeout) {
         String[] classAndMethod = testname.split("#");
         
-        final String[] command = new String[] { "ant", "test", "-Dtest.entry=" + classAndMethod[0], "-Dtest.entry.methods=" + classAndMethod[1] };
+        final String[] command = new String[] { "ant", "test", "-Dtest.entry=" + classAndMethod[0]};
         ProcessBuilderHelper processBuilderHelper = new ProcessBuilderHelper(env, folders);
         processBuilderHelper.parseParams(test.getParams());
 
@@ -124,7 +125,11 @@ public class AntTestExecutor extends KoPeMeExecutor {
 
     @Override
     protected void runMethod(File logFolder, TestCase test, File moduleFolder, long timeout) {
-        final File methodLogFile = getMethodLogFile(logFolder, test);
-        runTest(moduleFolder, methodLogFile, test, test.getExecutable(), timeout);
+        try (final JUnitTestShortener shortener = new JUnitTestShortener(testTransformer, moduleFolder, test.toEntity(), test.getMethod())) {
+            final File methodLogFile = getMethodLogFile(logFolder, test);
+            runTest(moduleFolder, methodLogFile, test, test.getExecutable(), timeout);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
