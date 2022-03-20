@@ -30,17 +30,15 @@ public class AntTestExecutor extends KoPeMeExecutor {
     }
 
     @Override
-    protected void runTest(File moduleFolder, File logFile, TestCase test, String testname, long timeout) {
-        String[] classAndMethod = testname.split("#");
-        
-        final String[] command = new String[] { "ant", "test", "-Dexecute.test.nio2=false", "-Dexecute.test.apr=false", "-Dtest.entry=" + classAndMethod[0]};
+    protected void runTest(File moduleFolder, File logFile, TestCase test, String testClass, long timeout) {
+        final String[] command = new String[] { "ant", "test", "-Dexecute.test.nio2=false", "-Dexecute.test.apr=false", "-Dtest.entry=" + testClass};
         ProcessBuilderHelper processBuilderHelper = new ProcessBuilderHelper(env, folders);
         processBuilderHelper.parseParams(test.getParams());
 
         final Process process;
         try {
             process = processBuilderHelper.buildFolderProcess(moduleFolder, logFile, command);
-            execute(testname, timeout, process);
+            execute(testClass, timeout, process);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -127,7 +125,7 @@ public class AntTestExecutor extends KoPeMeExecutor {
     protected void runMethod(File logFolder, TestCase test, File moduleFolder, long timeout) {
         try (final JUnitTestShortener shortener = new JUnitTestShortener(testTransformer, moduleFolder, test.toEntity(), test.getMethod())) {
             final File methodLogFile = getMethodLogFile(logFolder, test);
-            runTest(moduleFolder, methodLogFile, test, test.getExecutable(), timeout);
+            runTest(moduleFolder, methodLogFile, test, test.getClazz(), timeout);
         } catch (Exception e) {
             e.printStackTrace();
         }
