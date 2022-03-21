@@ -23,16 +23,19 @@ import java.util.concurrent.TimeUnit;
 public class AntTestExecutor extends KoPeMeExecutor {
 
     private static final Logger LOG = LogManager.getLogger(AntTestExecutor.class);
+    
+    AntCommandConstructor commandConstructor;
 
     public AntTestExecutor(final PeassFolders folders, final JUnitTestTransformer testTransformer, final EnvironmentVariables env) {
         super(folders, testTransformer, env);
-
         env.getEnvironmentVariables().put("ANT_OPTS", "-Duser.language=en -Duser.country=US -Duser.variant=US");
+        
+        commandConstructor = new TomcatCommandConstructor();
     }
 
     @Override
     protected void runTest(File moduleFolder, File logFile, TestCase test, String testClass, long timeout) {
-        final String[] command = new String[] { "ant", "test", "-Dexecute.test.nio2=false", "-Dexecute.test.apr=false", "-Dtest.entry=" + testClass};
+        final String[] command = commandConstructor.constructTestExec(testClass); 
         ProcessBuilderHelper processBuilderHelper = new ProcessBuilderHelper(env, folders);
         processBuilderHelper.parseParams(test.getParams());
 
@@ -85,7 +88,7 @@ public class AntTestExecutor extends KoPeMeExecutor {
             e.printStackTrace();
         } 
         
-        final String[] command = new String[] { "ant", "test-compile" };
+        final String[] command = commandConstructor.constructTestCompile();
         boolean isRunning = new ProcessSuccessTester(folders, testTransformer.getConfig(), env)
                 .testRunningSuccess(version, command);
         return isRunning;
@@ -106,8 +109,8 @@ public class AntTestExecutor extends KoPeMeExecutor {
                     folders.getProjectFolder().exists(),
                     folders.getProjectFolder().isDirectory());
         }
-
-        final String[] command = new String[] { "ant", "clean" };
+        
+        final String[] command = commandConstructor.constructClean();
         final ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.directory(folders.getProjectFolder());
         if (logFile != null) {
