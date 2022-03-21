@@ -68,8 +68,7 @@ public class AntTestExecutor extends KoPeMeExecutor {
             LOG.debug("Starting Test Transformation");
             prepareKiekerSource();
             transformTests();
-
-            TomcatBuildEditor buildEditor = new TomcatBuildEditor(testTransformer, getModules(), folders);
+            
             buildEditor.prepareBuild();
         }
     }
