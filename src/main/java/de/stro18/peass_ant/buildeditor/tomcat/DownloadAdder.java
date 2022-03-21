@@ -38,7 +38,7 @@ public class DownloadAdder {
         String artifactName = DependencyFormatter.getDependencyName(dependency);
         
         Element sourcefileParam;
-        if (dependency.getArtifactId().equals("kieker")) {
+        if (dependency.getArtifactId().equals("kieker") && dependency.getGroupId().contains("SNAPSHOT")) {
             sourcefileParam = XmlUtil.createParamElement(doc, "sourcefile", "https://oss.sonatype.org/content/repositories/snapshots/" + dependency.getGroupId()
                     .replace('.', '/') + "/" + dependency.getArtifactId() + "/" + dependency
                     .getVersion() + "/" + artifactName + ".jar");
