@@ -18,6 +18,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class AntTestExecutor extends KoPeMeExecutor {
@@ -53,18 +54,17 @@ public class AntTestExecutor extends KoPeMeExecutor {
         File outputFolder = new File(folders.getProjectFolder(), "output");
         
         if (testTransformer.getConfig().getMeasurementStrategy().equals(MeasurementStrategy.PARALLEL) && outputFolder.exists()) {
-            return;
+            final List<File> modules = getModules().getModules();
+            testTransformer.determineVersions(modules);
+        } else {
+            clean(logFile);
+            LOG.debug("Starting Test Transformation");
+            prepareKiekerSource();
+            transformTests();
+
+            TomcatBuildEditor buildEditor = new TomcatBuildEditor(testTransformer, getModules(), folders);
+            buildEditor.prepareBuild();
         }
-        
-        clean(logFile);
-        LOG.debug("Starting Test Transformation");
-        prepareKiekerSource();
-        transformTests();
-
-        TomcatBuildEditor buildEditor = new TomcatBuildEditor(testTransformer, getModules(), folders);
-        buildEditor.prepareBuild();
-
-        
     }
 
     @Override
