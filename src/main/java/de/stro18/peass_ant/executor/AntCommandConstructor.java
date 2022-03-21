@@ -6,5 +6,5 @@ public interface AntCommandConstructor {
 
     String[] constructClean();
 
-    String[] constructTestExec(String testClass);
+    String[] constructTestExec(String testClass, String[] argLine);
 }

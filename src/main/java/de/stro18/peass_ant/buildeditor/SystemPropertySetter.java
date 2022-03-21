@@ -20,8 +20,10 @@ public class SystemPropertySetter {
         
         for (Node jUnitElement : jUnitElementList) {
             for (String arg : requiredJvmArgs) {
+                String argKey = arg.substring(0,arg.indexOf("="));
+                
                 Element jvmargElement = doc.createElement("jvmarg");
-                jvmargElement.setAttribute("value", arg);
+                jvmargElement.setAttribute("value", argKey + "=" + "${" + argKey.substring(2) + "}");
                 jUnitElement.appendChild(jvmargElement);
             }
         }

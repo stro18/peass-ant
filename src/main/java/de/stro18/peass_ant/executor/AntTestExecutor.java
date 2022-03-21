@@ -10,6 +10,8 @@ import de.dagere.peass.execution.processutils.ProcessBuilderHelper;
 import de.dagere.peass.execution.processutils.ProcessSuccessTester;
 import de.dagere.peass.testtransformation.JUnitTestShortener;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
+import de.stro18.peass_ant.buildeditor.AntBuildEditor;
+import de.stro18.peass_ant.buildeditor.helper.AntArgLineBuilder;
 import de.stro18.peass_ant.buildeditor.tomcat.TomcatBuildEditor;
 import de.stro18.peass_ant.utils.AntModuleUtil;
 import org.apache.logging.log4j.LogManager;
@@ -25,18 +27,23 @@ public class AntTestExecutor extends KoPeMeExecutor {
 
     private static final Logger LOG = LogManager.getLogger(AntTestExecutor.class);
     
+    AntBuildEditor buildEditor;
     AntCommandConstructor commandConstructor;
 
     public AntTestExecutor(final PeassFolders folders, final JUnitTestTransformer testTransformer, final EnvironmentVariables env) {
         super(folders, testTransformer, env);
         env.getEnvironmentVariables().put("ANT_OPTS", "-Duser.language=en -Duser.country=US -Duser.variant=US");
-        
+
+        buildEditor = new TomcatBuildEditor(testTransformer, getModules(), folders);
         commandConstructor = new TomcatCommandConstructor();
     }
 
     @Override
     protected void runTest(File moduleFolder, File logFile, TestCase test, String testClass, long timeout) {
-        final String[] command = commandConstructor.constructTestExec(testClass); 
+        AntArgLineBuilder argLineBuilder = new AntArgLineBuilder(testTransformer, moduleFolder);
+        String[] arglineAnt = argLineBuilder.buildArglineAnt(buildEditor.getLastTmpFile());
+        
+        final String[] command = commandConstructor.constructTestExec(testClass, arglineAnt); 
         ProcessBuilderHelper processBuilderHelper = new ProcessBuilderHelper(env, folders);
         processBuilderHelper.parseParams(test.getParams());
 
