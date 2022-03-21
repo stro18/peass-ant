@@ -20,6 +20,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -40,10 +41,15 @@ public class AntTestExecutor extends KoPeMeExecutor {
 
     @Override
     protected void runTest(File moduleFolder, File logFile, TestCase test, String testClass, long timeout) {
-        AntArgLineBuilder argLineBuilder = new AntArgLineBuilder(testTransformer, moduleFolder);
-        String[] arglineAnt = argLineBuilder.buildArglineAnt(buildEditor.getLastTmpFile());
+        final String[] command;
+        if (testTransformer.getConfig().isUseKieker()) {
+            AntArgLineBuilder argLineBuilder = new AntArgLineBuilder(testTransformer, moduleFolder);
+            String[] arglineAnt = argLineBuilder.buildArglineAnt(buildEditor.getLastTmpFile());
+            command = commandConstructor.constructTestExec(testClass, arglineAnt);
+        } else {
+            command = commandConstructor.constructTestExec(testClass, new String[0]);
+        }
         
-        final String[] command = commandConstructor.constructTestExec(testClass, arglineAnt); 
         ProcessBuilderHelper processBuilderHelper = new ProcessBuilderHelper(env, folders);
         processBuilderHelper.parseParams(test.getParams());
 
