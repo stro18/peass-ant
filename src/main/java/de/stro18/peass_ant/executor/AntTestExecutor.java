@@ -132,14 +132,4 @@ public class AntTestExecutor extends KoPeMeExecutor {
             count++;
         }
     }
-
-    @Override
-    protected void runMethod(File logFolder, TestCase test, File moduleFolder, long timeout) {
-        try (final JUnitTestShortener shortener = new JUnitTestShortener(testTransformer, moduleFolder, test.toEntity(), test.getMethod())) {
-            final File methodLogFile = getMethodLogFile(logFolder, test);
-            runTest(moduleFolder, methodLogFile, test, test.getClazz(), timeout);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }
