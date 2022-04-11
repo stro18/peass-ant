@@ -1,5 +1,6 @@
 package de.stro18.peass_ant.executor;
 
+import de.dagere.peass.config.MeasurementStrategy;
 import de.dagere.peass.execution.utils.EnvironmentVariables;
 import de.dagere.peass.execution.utils.KoPeMeExecutor;
 import de.dagere.peass.execution.utils.ProjectModules;
@@ -7,7 +8,10 @@ import de.dagere.peass.folders.PeassFolders;
 import de.dagere.peass.dependency.analysis.data.TestCase;
 import de.dagere.peass.execution.processutils.ProcessBuilderHelper;
 import de.dagere.peass.execution.processutils.ProcessSuccessTester;
+import de.dagere.peass.testtransformation.JUnitTestShortener;
 import de.dagere.peass.testtransformation.JUnitTestTransformer;
+import de.stro18.peass_ant.buildeditor.AntBuildEditor;
+import de.stro18.peass_ant.buildeditor.helper.AntArgLineBuilder;
 import de.stro18.peass_ant.buildeditor.tomcat.TomcatBuildEditor;
 import de.stro18.peass_ant.utils.AntModuleUtil;
 import org.apache.logging.log4j.LogManager;
@@ -16,30 +20,43 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class AntTestExecutor extends KoPeMeExecutor {
 
     private static final Logger LOG = LogManager.getLogger(AntTestExecutor.class);
+    
+    AntBuildEditor buildEditor;
+    AntCommandConstructor commandConstructor;
 
     public AntTestExecutor(final PeassFolders folders, final JUnitTestTransformer testTransformer, final EnvironmentVariables env) {
         super(folders, testTransformer, env);
-
         env.getEnvironmentVariables().put("ANT_OPTS", "-Duser.language=en -Duser.country=US -Duser.variant=US");
+
+        buildEditor = new TomcatBuildEditor(testTransformer, getModules(), folders);
+        commandConstructor = new TomcatCommandConstructor();
     }
 
     @Override
-    protected void runTest(File moduleFolder, File logFile, TestCase test, String testname, long timeout) {
-        String[] classAndMethod = testname.split("#");
+    protected void runTest(File moduleFolder, File logFile, TestCase test, String testClass, long timeout) {
+        final String[] command;
+        if (testTransformer.getConfig().isUseKieker()) {
+            AntArgLineBuilder argLineBuilder = new AntArgLineBuilder(testTransformer, moduleFolder);
+            String[] arglineAnt = argLineBuilder.buildArglineAnt(buildEditor.getLastTmpFile());
+            command = commandConstructor.constructTestExec(testClass, arglineAnt);
+        } else {
+            command = commandConstructor.constructTestExec(testClass, new String[0]);
+        }
         
-        final String[] command = new String[] { "ant", "test", "-Dtest.entry=" + classAndMethod[0], "-Dtest.entry.methods=" + classAndMethod[1] };
         ProcessBuilderHelper processBuilderHelper = new ProcessBuilderHelper(env, folders);
         processBuilderHelper.parseParams(test.getParams());
 
         final Process process;
         try {
             process = processBuilderHelper.buildFolderProcess(moduleFolder, logFile, command);
-            execute(testname, timeout, process);
+            execute(testClass, timeout, process);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -47,15 +64,19 @@ public class AntTestExecutor extends KoPeMeExecutor {
 
     @Override
     public void prepareKoPeMeExecution(File logFile) throws IOException, InterruptedException, XmlPullParserException {
-        clean(logFile);
-        LOG.debug("Starting Test Transformation");
-        prepareKiekerSource();
-        transformTests();
-
-        TomcatBuildEditor buildEditor = new TomcatBuildEditor(testTransformer, getModules(), folders);
-        buildEditor.prepareBuild();
-
+        File outputFolder = new File(folders.getProjectFolder(), "output");
         
+        if (testTransformer.getConfig().getMeasurementStrategy().equals(MeasurementStrategy.PARALLEL) && outputFolder.exists()) {
+            final List<File> modules = getModules().getModules();
+            testTransformer.determineVersions(modules);
+        } else {
+            clean(logFile);
+            LOG.debug("Starting Test Transformation");
+            prepareKiekerSource();
+            transformTests();
+
+            buildEditor.prepareBuild();
+        }
     }
 
     @Override
@@ -79,7 +100,7 @@ public class AntTestExecutor extends KoPeMeExecutor {
             e.printStackTrace();
         } 
         
-        final String[] command = new String[] { "ant", "test-compile" };
+        final String[] command = commandConstructor.constructTestCompile();
         boolean isRunning = new ProcessSuccessTester(folders, testTransformer.getConfig(), env)
                 .testRunningSuccess(version, command);
         return isRunning;
@@ -100,8 +121,8 @@ public class AntTestExecutor extends KoPeMeExecutor {
                     folders.getProjectFolder().exists(),
                     folders.getProjectFolder().isDirectory());
         }
-
-        final String[] command = new String[] { "ant", "clean" };
+        
+        final String[] command = commandConstructor.constructClean();
         final ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.directory(folders.getProjectFolder());
         if (logFile != null) {
@@ -124,7 +145,11 @@ public class AntTestExecutor extends KoPeMeExecutor {
 
     @Override
     protected void runMethod(File logFolder, TestCase test, File moduleFolder, long timeout) {
-        final File methodLogFile = getMethodLogFile(logFolder, test);
-        runTest(moduleFolder, methodLogFile, test, test.getExecutable(), timeout);
+        try (final JUnitTestShortener shortener = new JUnitTestShortener(testTransformer, moduleFolder, test.toEntity(), test.getMethod())) {
+            final File methodLogFile = getMethodLogFile(logFolder, test);
+            runTest(moduleFolder, methodLogFile, test, test.getClazz(), timeout);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

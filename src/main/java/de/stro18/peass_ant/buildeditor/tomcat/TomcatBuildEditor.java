@@ -9,20 +9,28 @@ import de.stro18.peass_ant.buildeditor.fileutils.XmlUtil;
 import de.stro18.peass_ant.buildeditor.helper.TransitiveDependencyFinder;
 import org.w3c.dom.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TomcatBuildEditor extends AntBuildEditor {
     
-    private List<RequiredDependency> requiredDependencies;
+    private List<RequiredDependency> requiredDependencies = new ArrayList<>();
 
     public TomcatBuildEditor(final JUnitTestTransformer testTransformer, final ProjectModules modules, final PeassFolders folders) {
         super(testTransformer, modules, folders);
-        
-        requiredDependencies = TransitiveDependencyFinder.getAllTransitives(testTransformer.isJUnit3());
     }
-
+    
     @Override
-    protected void addDependencyDownloads(File module) {
+    protected void addDependencies(File module) {
+        if (requiredDependencies.isEmpty()) {
+            requiredDependencies = TransitiveDependencyFinder.getAllTransitives(testTransformer.isJUnit3());
+        }
+        
+        addDependencyDownloads(module);
+        extendClasspaths(module);
+    }
+    
+    private void addDependencyDownloads(File module) {
         File buildfile = new File(module, "build.xml");
         
         if (!buildfile.exists()) {
@@ -40,9 +48,8 @@ public class TomcatBuildEditor extends AntBuildEditor {
         
         XmlUtil.transformXmlFile(doc, buildfile);
     }
-
-    @Override
-    protected void extendClasspaths(File module) {
+    
+    private void extendClasspaths(File module) {
         if (module.getName().equals(folders.getProjectFolder().getName())) {
             this.extendClasspathsRootModule(module);
         } else if (module.getName().equals("jdbc-pool")) {
@@ -51,20 +58,13 @@ public class TomcatBuildEditor extends AntBuildEditor {
     }
 
     @Override
-    protected void changeProperties(File module) {
+    protected void changeConfig(File module) {
         if (module.getName().equals(folders.getProjectFolder().getName())) {
-            File buildfile = new File(module, "build.xml");
-            Document doc = XmlUtil.createDom(buildfile);
-
-            PropertySetter propertySetter = new PropertySetter();
-            propertySetter.changeProperties(doc);
-
-            XmlUtil.transformXmlFile(doc, buildfile);
-
+            ConfigChanger configChanger = new ConfigChanger();
             File propertiesFile = new File(module, "conf" + File.separator + "catalina.properties");
             
             if (propertiesFile.exists()) {
-                propertySetter.changeCatalinaProperties(propertiesFile);
+                configChanger.changeCatalinaProperties(propertiesFile);
             }
         }
     }

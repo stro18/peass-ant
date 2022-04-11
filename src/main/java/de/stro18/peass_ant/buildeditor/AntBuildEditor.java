@@ -38,9 +38,8 @@ public abstract class AntBuildEditor {
         for (final File module : modules.getModules()) {
             LOG.debug("Preparing build files of module " + module.getName());
             
-            this.addDependencyDownloads(module);
-            this.extendClasspaths(module);
-            this.changeProperties(module);
+            this.addDependencies(module);
+            this.changeConfig(module);
             
             if (testTransformer.getConfig().isUseKieker()) {
                 this.addJvmArguments(module);
@@ -68,11 +67,13 @@ public abstract class AntBuildEditor {
         XmlUtil.transformXmlFile(doc, buildfile);
     }
     
-    protected abstract void addDependencyDownloads(File module);
+    protected abstract void addDependencies(File module);
     
-    protected abstract void extendClasspaths(File module);
-    
-    protected abstract void changeProperties(File module);
+    protected abstract void changeConfig(File module);
     
     protected abstract void additionalChanges(File module);
+
+    public File getLastTmpFile() {
+        return lastTmpFile;
+    }
 }
