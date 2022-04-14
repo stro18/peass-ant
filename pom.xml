@@ -14,7 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-    <peass.version>0.1.13-SNAPSHOT</peass.version>
+    <peass.version>0.2.0-SNAPSHOT</peass.version>
     <shrinkwrap.version>3.1.4</shrinkwrap.version>
   </properties>
 
@@ -106,7 +106,7 @@
           <!-- necessary because version 2.12 contains error that prevents using dependencies -->
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.22.2</version>
+          <version>3.0.0-M5</version>
         </plugin>
       </plugins>
     </pluginManagement>
