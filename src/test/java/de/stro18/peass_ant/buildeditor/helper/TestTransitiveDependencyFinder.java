@@ -10,7 +10,7 @@ public class TestTransitiveDependencyFinder {
     
     @Test
     public void testNonTransitiveDependency() {
-        Assertions.assertTrue(dependencyFound("kopeme-junit"));
+        Assertions.assertTrue(dependencyFound("kieker"));
     }
     
     @Test
