@@ -58,20 +58,16 @@ public class TomcatBuildEditor extends AntBuildEditor {
     }
 
     @Override
-    protected void changeConfig(File module) {
+    protected void additionalChanges(File module) {
         if (module.getName().equals(folders.getProjectFolder().getName())) {
+            // change configuration of StandardJarScanner
             ConfigChanger configChanger = new ConfigChanger();
             File propertiesFile = new File(module, "conf" + File.separator + "catalina.properties");
-            
+
             if (propertiesFile.exists()) {
                 configChanger.changeCatalinaProperties(propertiesFile);
             }
         }
-    }
-
-    @Override
-    protected void additionalChanges(File module) {
-        return;
     }
 
     private void extendClasspathsRootModule(File module) {
@@ -86,7 +82,6 @@ public class TomcatBuildEditor extends AntBuildEditor {
         classpathExtender.changeTxt2HtmlClasspath();
 
         XmlUtil.transformXmlFile(doc, buildfile);
-        
     }
 
     private void extendClasspathsJdbcModule(File module) {

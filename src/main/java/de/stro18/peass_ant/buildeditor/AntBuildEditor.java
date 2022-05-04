@@ -39,7 +39,6 @@ public abstract class AntBuildEditor {
             LOG.debug("Preparing build files of module " + module.getName());
             
             this.addDependencies(module);
-            this.changeConfig(module);
             
             if (testTransformer.getConfig().isUseKieker()) {
                 this.addJvmArguments(module);
@@ -68,8 +67,6 @@ public abstract class AntBuildEditor {
     }
     
     protected abstract void addDependencies(File module);
-    
-    protected abstract void changeConfig(File module);
     
     protected abstract void additionalChanges(File module);
 
