@@ -14,7 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-    <peass.version>0.1.13-SNAPSHOT</peass.version>
+    <peass.version>0.2.1-SNAPSHOT</peass.version>
     <shrinkwrap.version>3.1.4</shrinkwrap.version>
   </properties>
 
